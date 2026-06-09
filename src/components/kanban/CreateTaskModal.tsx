@@ -168,7 +168,7 @@ export function CreateTaskModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assigneeId">Assignee</Label>
-              <Select onValueChange={(val) => setValue("assigneeId", val)}>
+              <Select onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>
                 <SelectTrigger className="border-border bg-card">
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>

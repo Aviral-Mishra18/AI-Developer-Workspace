@@ -200,7 +200,7 @@ export function EditTaskModal({
               <Label htmlFor="edit-assigneeId">Assignee</Label>
               <Select
                 defaultValue={task.assignee.id}
-                onValueChange={(val) => { if (val) setValue("assigneeId", val) }}
+                onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}
               >
                 <SelectTrigger className="border-border bg-card">
                   <SelectValue placeholder="Select member" />
