@@ -7,8 +7,12 @@ import { AIUsageChart } from "@/components/dashboard/AIUsageChart";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { FolderGit, Kanban, Users, Sparkles, AlertCircle } from "lucide-react";
 import { dashboardStats } from "@/lib/mock-data";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function DashboardPage() {
+  const { profile, user: authUser } = useAuth();
+  const displayName = profile?.name || authUser?.email?.split('@')[0] || "there";
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -17,7 +21,7 @@ export default function DashboardPage() {
           Dashboard
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Welcome back! Here is an overview of your workspaces, project activities, and AI metrics.
+          Welcome back, <span className="font-medium text-foreground">{displayName}</span>! Here is an overview of your workspaces, project activities, and AI metrics.
         </p>
       </div>
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { projects as initialProjects } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { projects as mockProjects } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
 import { Button } from "@/components/ui/button";
@@ -20,8 +21,37 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState(initialProjects);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        // Transform the date format to match UI if needed
+        const formattedData = (data || []).map(p => ({
+          ...p,
+          lastUpdated: p.created_at ? new Date(p.created_at).toLocaleDateString() : "Just now",
+          team: p.team || mockProjects[0].team, // Fallback team since table doesn't have it yet
+        }));
+        setProjects(formattedData);
+      } catch (err: any) {
+        console.error("Failed to fetch projects:", err.message || JSON.stringify(err) || err);
+        // Fallback to mock data if the table doesn't exist or fetch fails
+        setProjects(mockProjects);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");

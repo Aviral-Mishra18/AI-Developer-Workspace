@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/lib/schemas";
 import { z } from "zod";
@@ -22,6 +22,7 @@ import { Eye, EyeOff, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/lib/supabase";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -62,6 +63,7 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -93,12 +95,38 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (authData.user) {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: authData.user.id,
+            name: data.name,
+            email: data.email,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name.replace(/ /g, "")}`,
+          });
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          throw new Error("Account created but failed to set up profile");
+        }
+      }
+
       toast.success("Account successfully created!");
       router.push("/dashboard");
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred during registration");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSocialLogin = (platform: string) => {
@@ -194,7 +222,17 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex items-start space-x-2 pt-1">
-              <Checkbox id="acceptTerms" {...register("acceptTerms")} />
+              <Controller
+                name="acceptTerms"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox 
+                    id="acceptTerms" 
+                    checked={field.value} 
+                    onCheckedChange={field.onChange} 
+                  />
+                )}
+              />
               <Label
                 htmlFor="acceptTerms"
                 className="text-xs text-muted-foreground leading-normal font-medium cursor-pointer"

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -29,8 +30,10 @@ import {
 import { workspaces, notifications, currentUser } from "@/lib/mock-data";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
 interface TopNavbarProps {
   onMenuClick?: () => void;
@@ -38,13 +41,32 @@ interface TopNavbarProps {
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0]);
   const [unreadNotifications, setUnreadNotifications] = useState(
     notifications.filter((n) => !n.read)
   );
+  
+  const { profile, user: authUser } = useAuth();
+  
+  // Use profile data if available, fallback to basic user data, or mock user
+  const user = profile ? {
+    name: profile.name || "User",
+    email: profile.email || "user@example.com",
+    avatar: profile.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
+  } : {
+    name: authUser?.email?.split('@')[0] || currentUser.name,
+    email: authUser?.email || currentUser.email,
+    avatar: currentUser.avatar,
+  };
 
   const handleMarkAllRead = () => {
     setUnreadNotifications([]);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
   const navItems = [
@@ -124,7 +146,9 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[200px]">
-              <DropdownMenuLabel>Select Workspace</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Select Workspace</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               {workspaces.map((ws) => (
                 <DropdownMenuItem
@@ -236,19 +260,21 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               }
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                <AvatarFallback>AM</AvatarFallback>
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{currentUser.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser.email}
-                  </p>
-                </div>
-              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
@@ -267,9 +293,9 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-destructive focus:text-destructive"
-                render={<Link href="/login" className="flex items-center gap-2 w-full" />}
+                onClick={handleLogout}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 mr-2" />
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>

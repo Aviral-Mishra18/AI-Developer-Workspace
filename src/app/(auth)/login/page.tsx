@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/schemas";
@@ -22,6 +22,7 @@ import { Eye, EyeOff, AlertCircle, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -58,6 +59,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
+
   const {
     register,
     handleSubmit,
@@ -75,19 +80,21 @@ export default function LoginPage() {
     setIsLoading(true);
     setErrorMsg(null);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) throw error;
+
+      toast.success("Successfully logged in!");
+      router.push("/dashboard");
+    } catch (err: any) {
+      setErrorMsg(err.message || "An error occurred during login");
+    } finally {
       setIsLoading(false);
-      if (data.email === "alex.morgan@nexusai.com" && data.password === "password123") {
-        toast.success("Successfully logged in!");
-        router.push("/dashboard");
-      } else if (data.email === "alex.morgan@nexusai.com") {
-        setErrorMsg("Incorrect password. Use password123 for demo.");
-      } else {
-        toast.success("Demo login accepted!");
-        router.push("/dashboard");
-      }
-    }, 1500);
+    }
   };
 
   const handleSocialLogin = (platform: string) => {

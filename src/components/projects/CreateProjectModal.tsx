@@ -27,6 +27,8 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { users } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 type CreateProjectValues = z.infer<typeof createProjectSchema>;
 
@@ -55,27 +57,47 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
     },
   });
 
+  const { user } = useAuth();
+
   const onSubmit = async (data: CreateProjectValues) => {
+    if (!user) return;
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      onSuccess({
-        id: `p-${Date.now()}`,
-        name: data.name,
-        description: data.description,
-        status: data.status,
-        progress: data.progress,
+    try {
+      const { data: newDbProject, error } = await supabase
+        .from('projects')
+        .insert({
+          name: data.name,
+          description: data.description,
+          status: data.status,
+          progress: data.progress,
+          user_id: user.id
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      const newProject = {
+        id: newDbProject.id,
+        name: newDbProject.name,
+        description: newDbProject.description,
+        status: newDbProject.status,
+        progress: newDbProject.progress,
         team: [users[0], users[1]], // Default members assigned for prototype
         lastUpdated: "Just now",
-        workspaceId: "ws1",
-        createdAt: new Date().toISOString().split("T")[0],
-      });
+        createdAt: newDbProject.created_at,
+      };
+      
+      onSuccess(newProject);
       toast.success("Project created successfully!");
       reset();
       onClose();
-    }, 1200);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create project");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

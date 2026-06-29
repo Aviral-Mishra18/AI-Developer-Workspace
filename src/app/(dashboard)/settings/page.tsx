@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { currentUser, billingPlan, invoices } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,21 +17,64 @@ import { Badge } from "@/components/ui/badge";
 import { User, Shield, Bell, CreditCard, Paintbrush, Loader2, Key, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
 
   // Profile Form State
-  const [profileName, setProfileName] = useState(currentUser.name);
-  const [profileBio, setProfileBio] = useState(currentUser.bio);
+  const { profile, user: authUser, refreshProfile } = useAuth();
+  const [profileName, setProfileName] = useState("");
+  const [profileBio, setProfileBio] = useState("");
+  const [timezone, setTimezone] = useState("America/New_York");
 
-  const handleSaveProfile = () => {
+  const user = profile ? {
+    name: profile.name || "User",
+    email: profile.email || "user@example.com",
+    avatar: profile.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
+    bio: profile.bio || "No bio set.",
+    timezone: profile.timezone || "America/New_York",
+  } : {
+    name: authUser?.email?.split('@')[0] || currentUser.name,
+    email: authUser?.email || currentUser.email,
+    avatar: currentUser.avatar,
+    bio: currentUser.bio,
+    timezone: currentUser.timezone,
+  };
+
+  useEffect(() => {
+    if (profile) {
+      setProfileName(profile.name || "");
+      setProfileBio(profile.bio || "");
+      setTimezone(profile.timezone || "America/New_York");
+    }
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    if (!authUser) return;
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: profileName,
+          bio: profileBio,
+          timezone: timezone,
+        })
+        .eq('id', authUser.id);
+        
+      if (error) throw error;
+      
+      await refreshProfile();
       toast.success("Profile settings updated!");
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSaveSecurity = () => {
@@ -88,8 +131,8 @@ export default function SettingsPage() {
             <CardContent className="space-y-5">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16 border">
-                  <AvatarImage src={currentUser.avatar} />
-                  <AvatarFallback>AM</AvatarFallback>
+                  <AvatarImage src={user.avatar} />
+                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">
                   <Button variant="outline" size="sm" className="h-8">Change Avatar</Button>
@@ -111,7 +154,7 @@ export default function SettingsPage() {
                   <Label htmlFor="prof-email">Email Address (Read-only)</Label>
                   <Input
                     id="prof-email"
-                    value={currentUser.email}
+                    value={user.email}
                     disabled
                     className="border-border bg-muted/50"
                   />
@@ -130,7 +173,7 @@ export default function SettingsPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="prof-tz">Timezone</Label>
-                <Select defaultValue={currentUser.timezone}>
+                <Select value={timezone} onValueChange={(val) => setTimezone(val || "America/New_York")}>
                   <SelectTrigger className="border-border bg-card max-w-xs">
                     <SelectValue placeholder="Select timezone" />
                   </SelectTrigger>

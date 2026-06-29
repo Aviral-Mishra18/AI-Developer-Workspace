@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -29,6 +30,7 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const { profile } = useAuth();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -131,14 +133,18 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       <div className="p-4 border-t border-border mt-auto">
         <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "")}>
           <img
-            src="https://api.dicebear.com/8.x/avataaars/svg?seed=Alex"
+            src={profile?.avatar || "https://api.dicebear.com/8.x/avataaars/svg?seed=Guest"}
             alt="User Avatar"
             className="w-8 h-8 rounded-full border border-border bg-muted flex-shrink-0"
           />
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-medium leading-none truncate">Alex Morgan</span>
-              <span className="text-xs text-muted-foreground truncate">alex.morgan@nexusai.com</span>
+              <span className="text-sm font-medium leading-none truncate">
+                {profile?.name || "Loading..."}
+              </span>
+              <span className="text-xs text-muted-foreground truncate">
+                {profile?.email || ""}
+              </span>
             </div>
           )}
         </div>
