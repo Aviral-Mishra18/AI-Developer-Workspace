@@ -30,7 +30,7 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -140,10 +140,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium leading-none truncate">
-                {profile?.name || "Loading..."}
+                {profile?.name || user?.email?.split('@')[0] || "Guest"}
               </span>
               <span className="text-xs text-muted-foreground truncate">
-                {profile?.email || ""}
+                {profile?.email || user?.email || ""}
               </span>
             </div>
           )}

@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { workspaces, users, activityFeed } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { workspaces as mockWorkspaces, users as mockUsers, activityFeed } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Shield, ShieldAlert, Users, FolderGit, Database, UserPlus } from "lucide-react";
+import { Shield, ShieldAlert, Users, FolderGit, Database, UserPlus, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ActivityFeed as ActivityFeedWidget } from "@/components/dashboard/ActivityFeed";
+import { supabase } from "@/lib/supabase";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,7 +28,89 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
   const resolvedParams = React.use(params);
   const workspaceId = resolvedParams.id;
 
-  const workspace = workspaces.find((w) => w.id === workspaceId) || workspaces[0];
+  const [workspace, setWorkspace] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWorkspaceDetails = async () => {
+      try {
+        const { data: ws, error: wsError } = await supabase
+          .from("workspaces")
+          .select("*")
+          .eq("id", workspaceId)
+          .maybeSingle();
+
+        if (wsError) throw wsError;
+
+        if (!ws) {
+          const fallbackWs = mockWorkspaces.find((w) => w.id === workspaceId) || mockWorkspaces[0];
+          setWorkspace(fallbackWs);
+          setMembers(mockUsers.slice(0, 5));
+          setIsLoading(false);
+          return;
+        }
+
+        // Get members
+        const { data: membersData, error: memError } = await supabase
+          .from("workspace_members")
+          .select("role, profiles(id, name, email, avatar)")
+          .eq("workspace_id", workspaceId);
+
+        if (memError) throw memError;
+
+        // Get project count
+        const { count: projectCount } = await supabase
+          .from("projects")
+          .select("*", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId);
+
+        const formattedMembers = (membersData || []).map((m: any) => ({
+          id: m.profiles?.id || "u-unknown",
+          name: m.profiles?.name || "Collaborator",
+          email: m.profiles?.email || "",
+          avatar: m.profiles?.avatar || `https://api.dicebear.com/8.x/avataaars/svg?seed=${m.profiles?.id}`,
+          role: m.role,
+        }));
+
+        setWorkspace({
+          id: ws.id,
+          name: ws.name,
+          description: ws.description,
+          visibility: ws.visibility,
+          memberCount: formattedMembers.length,
+          projectCount: projectCount || 0,
+          storage: "0.1 GB",
+        });
+        setMembers(formattedMembers);
+      } catch (err: any) {
+        console.error("Failed to load workspace details:", err.message);
+        const fallbackWs = mockWorkspaces.find((w) => w.id === workspaceId) || mockWorkspaces[0];
+        setWorkspace(fallbackWs);
+        setMembers(mockUsers.slice(0, 5));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkspaceDetails();
+  }, [workspaceId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!workspace) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-xl font-bold">Workspace not found</h2>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -108,23 +192,23 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.slice(0, 5).map((user) => (
+                  {members.map((user) => (
                     <TableRow key={user.id} className="border-border">
                       <TableCell className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.avatar} />
-                          <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarFallback>{user.name ? user.name.slice(0, 2).toUpperCase() : "??"}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{user.name}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.role === "Admin" ? "default" : "secondary"}>
+                        <Badge variant={user.role === "owner" || user.role === "admin" ? "default" : "secondary"}>
                           {user.role}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">
-                        {user.role === "Admin" ? "Full Control" : "Read, Write, Execute"}
+                        {user.role === "owner" || user.role === "admin" ? "Full Control" : "Read, Write, Execute"}
                       </TableCell>
                     </TableRow>
                   ))}

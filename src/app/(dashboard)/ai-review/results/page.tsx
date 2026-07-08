@@ -1,20 +1,67 @@
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { codeReviewIssues, CodeReviewIssue } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, ShieldAlert, Cpu, Sparkles, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
+import { AlertTriangle, ShieldAlert, Cpu, Sparkles, CheckCircle2, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
-export default function CodeReviewResultsPage() {
-  const securityIssues = codeReviewIssues.filter((i) => i.category === "security");
-  const performanceIssues = codeReviewIssues.filter((i) => i.category === "performance");
-  const bestPracticeIssues = codeReviewIssues.filter((i) => i.category === "best-practices");
-  const codeSmells = codeReviewIssues.filter((i) => i.category === "code-smells");
-  const aiSuggestions = codeReviewIssues.filter((i) => i.category === "ai-suggestions");
+function CodeReviewResultsContent() {
+  const searchParams = useSearchParams();
+  const reviewId = searchParams.get("id");
+  const [issues, setIssues] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      if (!reviewId) {
+        setIssues(codeReviewIssues);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("ai_code_review_issues")
+          .select("*")
+          .eq("review_id", reviewId);
+
+        if (error) throw error;
+
+        const mappedIssues = (data || []).map(i => ({
+          id: i.id,
+          title: i.title,
+          severity: i.severity,
+          category: i.category,
+          description: i.description,
+          file: i.file_path,
+          line: i.line_number,
+          suggestion: i.suggestion
+        }));
+
+        setIssues(mappedIssues);
+      } catch (err: any) {
+        console.error("Failed to load review results:", err.message);
+        setIssues(codeReviewIssues);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchIssues();
+  }, [reviewId]);
+
+  const securityIssues = issues.filter((i) => i.category === "security");
+  const performanceIssues = issues.filter((i) => i.category === "performance");
+  const bestPracticeIssues = issues.filter((i) => i.category === "best-practices");
+  const codeSmells = issues.filter((i) => i.category === "code-smells");
+  const aiSuggestions = issues.filter((i) => i.category === "ai-suggestions");
 
   const getSeverityColor = (sev: string) => {
     switch (sev) {
@@ -59,6 +106,14 @@ export default function CodeReviewResultsPage() {
       </CardContent>
     </Card>
   );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -155,5 +210,17 @@ export default function CodeReviewResultsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function CodeReviewResultsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <CodeReviewResultsContent />
+    </Suspense>
   );
 }

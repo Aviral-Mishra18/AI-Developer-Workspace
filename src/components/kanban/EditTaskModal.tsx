@@ -27,6 +27,7 @@ import {
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { users, Task, TaskStatus, TaskPriority } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 
 type EditTaskValues = z.infer<typeof createTaskSchema>;
 
@@ -47,6 +48,25 @@ export function EditTaskModal({
 }: EditTaskModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, name");
+        if (error) throw error;
+        setDbUsers(data || []);
+      } catch (err: any) {
+        console.error("Failed to load profiles for assignee list:", err.message);
+        setDbUsers(users);
+      }
+    };
+    if (isOpen) {
+      fetchUsers();
+    }
+  }, [isOpen]);
 
   const {
     register,
@@ -62,12 +82,12 @@ export function EditTaskModal({
     if (task) {
       reset({
         title: task.title,
-        description: task.description,
+        description: task.description || "",
         status: task.status,
         priority: task.priority,
-        assigneeId: task.assignee.id,
-        dueDate: task.dueDate,
-        tags: task.tags.join(", "),
+        assigneeId: task.assignee?.id || "",
+        dueDate: task.dueDate || "",
+        tags: task.tags ? task.tags.join(", ") : "",
       });
     }
   }, [task, reset]);
@@ -77,34 +97,59 @@ export function EditTaskModal({
   const onSubmit = async (data: EditTaskValues) => {
     setIsLoading(true);
 
-    const assignee = users.find((u) => u.id === data.assigneeId) || task.assignee;
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          priority: data.priority,
+          assignee_id: data.assigneeId || null,
+          due_date: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+        })
+        .eq("id", task.id);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+      if (error) throw error;
+
       onUpdate({
         ...task,
         title: data.title,
         description: data.description,
         status: (data.status as TaskStatus) || task.status,
         priority: (data.priority as TaskPriority) || task.priority,
-        assignee,
         dueDate: data.dueDate,
-        tags: data.tags ? data.tags.split(",").map(t => t.trim()).filter(Boolean) : task.tags,
+        tags: [],
       });
       toast.success("Task updated successfully!");
       onClose();
-    }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to update task");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
-    setTimeout(() => {
-      setIsDeleting(false);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", task.id);
+
+      if (error) throw error;
+
       onDelete(task.id);
       toast.success("Task deleted successfully!");
       onClose();
-    }, 1000);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to delete task");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -206,7 +251,7 @@ export function EditTaskModal({
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((u) => (
+                  {dbUsers.map((u) => (
                     <SelectItem key={u.id} value={u.id}>
                       {u.name}
                     </SelectItem>

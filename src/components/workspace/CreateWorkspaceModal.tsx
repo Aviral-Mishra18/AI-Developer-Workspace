@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 type CreateWorkspaceValues = z.infer<typeof createWorkspaceSchema>;
 
@@ -37,6 +39,7 @@ interface CreateWorkspaceModalProps {
 
 export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorkspaceModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const {
     register,
@@ -54,25 +57,46 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
   });
 
   const onSubmit = async (data: CreateWorkspaceValues) => {
+    if (!user) {
+      toast.error("Please login to create a workspace");
+      return;
+    }
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data: newWs, error } = await supabase
+        .from("workspaces")
+        .insert({
+          name: data.name,
+          description: data.description,
+          visibility: data.visibility,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       onSuccess({
-        id: `ws-${Date.now()}`,
-        name: data.name,
-        description: data.description,
-        visibility: data.visibility,
+        id: newWs.id,
+        name: newWs.name,
+        description: newWs.description,
+        visibility: newWs.visibility,
         memberCount: 1,
         projectCount: 0,
         storage: "0 GB",
         lastActivity: "Just now",
+        createdAt: newWs.created_at,
       });
+
       toast.success("Workspace created successfully!");
       reset();
       onClose();
-    }, 1200);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create workspace");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

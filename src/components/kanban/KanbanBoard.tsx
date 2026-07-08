@@ -7,7 +7,9 @@ import { TaskCard } from "./TaskCard";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { EditTaskModal } from "./EditTaskModal";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 interface KanbanBoardProps {
   projectId?: string;
@@ -23,15 +25,54 @@ const COLUMNS: { id: TaskStatus; title: string }[] = [
 
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [mounted, setMounted] = useState(false);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeModalCol, setActiveModalCol] = useState<TaskStatus | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  // Avoid hydration mismatch by waiting until mounted (next.js client requirement)
+  const fetchTasks = async () => {
+    try {
+      let query = supabase
+        .from("tasks")
+        .select("*, assignee:assignee_id(id, name, email, avatar)");
+
+      if (projectId) {
+        query = query.eq("project_id", projectId);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedTasks = (data || []).map((t: any) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        status: t.status,
+        priority: t.priority,
+        dueDate: t.due_date ? new Date(t.due_date).toLocaleDateString() : "",
+        projectId: t.project_id,
+        assignee: t.assignee ? {
+          id: t.assignee.id,
+          name: t.assignee.name,
+          email: t.assignee.email,
+          avatar: t.assignee.avatar,
+        } : null,
+        tags: []
+      }));
+
+      setTasks(formattedTasks);
+    } catch (err: any) {
+      console.error("Failed to load tasks:", err.message);
+      setTasks(projectId ? initialTasks.filter((t) => t.projectId === projectId) : initialTasks);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
-    // Filter tasks if projectId is provided
-    setTasks(projectId ? initialTasks.filter((t) => t.projectId === projectId) : initialTasks);
+    fetchTasks();
   }, [projectId]);
 
   if (!mounted) return null;
@@ -52,32 +93,51 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     const taskIndex = updatedTasks.findIndex((t) => t.id === draggableId);
 
     if (taskIndex !== -1) {
-      // Update task status
-      updatedTasks[taskIndex].status = destination.droppableId as TaskStatus;
+      const task = updatedTasks[taskIndex];
+      const newStatus = destination.droppableId as TaskStatus;
 
-      // Reorder items in state
+      // Optimistic update
+      task.status = newStatus;
       const [removed] = updatedTasks.splice(taskIndex, 1);
-      
-      // Find where to insert in destination column
-      const colTasks = updatedTasks.filter((t) => t.status === destination.droppableId);
-      const otherColTasks = updatedTasks.filter((t) => t.status !== destination.droppableId);
-      
+      const colTasks = updatedTasks.filter((t) => t.status === newStatus);
+      const otherColTasks = updatedTasks.filter((t) => t.status !== newStatus);
       colTasks.splice(destination.index, 0, removed);
       setTasks([...colTasks, ...otherColTasks]);
+
+      // Database update
+      supabase
+        .from("tasks")
+        .update({ status: newStatus })
+        .eq("id", draggableId)
+        .then(({ error }) => {
+          if (error) {
+            console.error("Failed to update task status:", error.message);
+            toast.error("Failed to update status in database");
+            fetchTasks();
+          }
+        });
     }
   };
 
-  const handleCreateTask = (newTask: Task) => {
-    setTasks((prev) => [newTask, ...prev]);
+  const handleCreateTask = (newTask: any) => {
+    fetchTasks(); // Reload from database to capture accurate assignee details
   };
 
-  const handleUpdateTask = (updatedTask: Task) => {
-    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+  const handleUpdateTask = (updatedTask: any) => {
+    fetchTasks();
   };
 
   const handleDeleteTask = (taskId: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[250px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

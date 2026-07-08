@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { workspaces as initialWorkspaces } from "@/lib/mock-data";
 import { WorkspaceCard } from "@/components/workspace/WorkspaceCard";
 import { CreateWorkspaceModal } from "@/components/workspace/CreateWorkspaceModal";
@@ -13,13 +13,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Building } from "lucide-react";
+import { Plus, Search, Building, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function WorkspaceListPage() {
-  const [workspaces, setWorkspaces] = useState(initialWorkspaces);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterVisibility, setFilterVisibility] = useState<string>("all");
+
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("workspaces")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const enrichedWorkspaces = await Promise.all((data || []).map(async (ws) => {
+          // Get member count
+          const { count: memberCount } = await supabase
+            .from("workspace_members")
+            .select("*", { count: "exact", head: true })
+            .eq("workspace_id", ws.id);
+
+          // Get project count
+          const { count: projectCount } = await supabase
+            .from("projects")
+            .select("*", { count: "exact", head: true })
+            .eq("workspace_id", ws.id);
+
+          return {
+            id: ws.id,
+            name: ws.name,
+            description: ws.description,
+            visibility: ws.visibility,
+            memberCount: memberCount || 1,
+            projectCount: projectCount || 0,
+            storage: "0.1 GB",
+            lastActivity: "Just now",
+            createdAt: ws.created_at,
+          };
+        }));
+
+        setWorkspaces(enrichedWorkspaces);
+      } catch (err: any) {
+        console.error("Failed to fetch workspaces:", err.message);
+        setWorkspaces(initialWorkspaces);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWorkspaces();
+  }, []);
 
   const handleCreateWorkspace = (newWorkspace: any) => {
     setWorkspaces((prev) => [newWorkspace, ...prev]);
@@ -78,7 +128,11 @@ export default function WorkspaceListPage() {
       </div>
 
       {/* Grid List */}
-      {filteredWorkspaces.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredWorkspaces.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-xl bg-card text-center space-y-4">
           <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-full text-muted-foreground">
             <Building className="h-8 w-8" />

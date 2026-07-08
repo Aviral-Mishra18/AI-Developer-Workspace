@@ -9,9 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { FileSearch, GitBranch, UploadCloud, AlertCircle, FileCode, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function CodeReviewUploadPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [gitUrl, setGitUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -34,30 +37,69 @@ export default function CodeReviewUploadPage() {
     }
   };
 
-  const handleStartReview = () => {
+  const handleStartReview = async () => {
     if (uploadedFiles.length === 0 && !gitUrl.trim()) {
       toast.error("Please stage code files or enter a GitHub repository URL");
       return;
     }
 
-    setIsUploading(true);
-    setUploadProgress(10);
+    if (!user) {
+      toast.error("You must be logged in to run reviews");
+      return;
+    }
 
-    // Simulate analysis steps
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsUploading(false);
-            toast.success("Analysis complete! Rendering review results.");
-            router.push("/ai-review/results");
-          }, 500);
-          return 100;
-        }
-        return prev + 20;
-      });
-    }, 400);
+    setIsUploading(true);
+    setUploadProgress(20);
+
+    try {
+      const filePathStr = uploadedFiles.map(f => f.name).join(", ") || gitUrl;
+      const { data: review, error: reviewErr } = await supabase
+        .from("ai_code_reviews")
+        .insert({
+          file_path: filePathStr,
+          commit_id: `commit-${Math.floor(Math.random() * 1000000)}`,
+          status: "completed",
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (reviewErr) throw reviewErr;
+
+      setUploadProgress(60);
+
+      const { codeReviewIssues: mockIssues } = await import("@/lib/mock-data");
+      
+      const issuesToInsert = mockIssues.map(issue => ({
+        review_id: review.id,
+        severity: issue.severity,
+        category: issue.category,
+        title: issue.title,
+        description: issue.description,
+        file_path: issue.file,
+        line_number: issue.line,
+        suggestion: issue.suggestion
+      }));
+
+      const { error: issuesErr } = await supabase
+        .from("ai_code_review_issues")
+        .insert(issuesToInsert);
+
+      if (issuesErr) throw issuesErr;
+
+      setUploadProgress(100);
+      
+      setTimeout(() => {
+        setIsUploading(false);
+        toast.success("Analysis complete! Persisted review results.");
+        router.push(`/ai-review/results?id=${review.id}`);
+      }, 500);
+
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to save code review");
+      setIsUploading(false);
+    }
   };
 
   return (

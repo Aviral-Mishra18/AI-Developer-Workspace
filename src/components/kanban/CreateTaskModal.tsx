@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTaskSchema } from "@/lib/schemas";
@@ -27,6 +27,8 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { users } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 type CreateTaskValues = z.infer<typeof createTaskSchema>;
 
@@ -35,6 +37,7 @@ interface CreateTaskModalProps {
   onClose: () => void;
   onSuccess: (newTask: any) => void;
   defaultStatus?: string;
+  projectId?: string;
 }
 
 export function CreateTaskModal({
@@ -42,8 +45,41 @@ export function CreateTaskModal({
   onClose,
   onSuccess,
   defaultStatus = "todo",
+  projectId: projectIdProp,
 }: CreateTaskModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+  const [dbProjects, setDbProjects] = useState<any[]>([]);
+  const [selectedProjId, setSelectedProjId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchUsersAndProjects = async () => {
+      try {
+        const { data: usersData } = await supabase
+          .from("profiles")
+          .select("id, name");
+        setDbUsers(usersData || []);
+
+        if (!projectIdProp) {
+          const { data: projsData } = await supabase
+            .from("projects")
+            .select("id, name");
+          setDbProjects(projsData || []);
+          if (projsData && projsData.length > 0) {
+            setSelectedProjId(projsData[0].id);
+          }
+        }
+      } catch (err: any) {
+        console.error("Failed to load form metadata:", err.message);
+        setDbUsers(users);
+      }
+    };
+
+    if (isOpen) {
+      fetchUsersAndProjects();
+    }
+  }, [isOpen, projectIdProp]);
 
   const {
     register,
@@ -65,28 +101,57 @@ export function CreateTaskModal({
   });
 
   const onSubmit = async (data: CreateTaskValues) => {
+    if (!user) {
+      toast.error("Please login to create a task");
+      return;
+    }
     setIsLoading(true);
 
-    const assignee = users.find((u) => u.id === data.assigneeId) || users[0];
+    try {
+      let targetProjId = projectIdProp || selectedProjId;
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      onSuccess({
-        id: `t-${Date.now()}`,
-        title: data.title,
-        description: data.description,
-        status: data.status,
-        priority: data.priority,
-        assignee,
-        dueDate: data.dueDate,
-        tags: data.tags ? data.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
-        projectId: "p1", // Assumes project context
-      });
+      if (!targetProjId) {
+        const { data: newProj, error: projErr } = await supabase
+          .from("projects")
+          .insert({
+            name: "General Tasks",
+            description: "Default project for miscellaneous tasks",
+            status: "active"
+          })
+          .select()
+          .single();
+
+        if (projErr) throw projErr;
+        targetProjId = newProj.id;
+      }
+
+      const { data: newTask, error } = await supabase
+        .from("tasks")
+        .insert({
+          title: data.title,
+          description: data.description,
+          status: data.status,
+          priority: data.priority,
+          assignee_id: data.assigneeId || null,
+          due_date: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+          project_id: targetProjId,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      onSuccess(newTask);
       toast.success("Task created successfully!");
       reset();
       onClose();
-    }, 1200);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "Failed to create task");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,6 +165,24 @@ export function CreateTaskModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+          {!projectIdProp && dbProjects.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="projectIdSelect">Project</Label>
+              <Select defaultValue={selectedProjId} onValueChange={(val) => { if (val) setSelectedProjId(val); }}>
+                <SelectTrigger className="border-border bg-card">
+                  <SelectValue placeholder="Select project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dbProjects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="title">Task Title</Label>
             <Input
@@ -173,7 +256,7 @@ export function CreateTaskModal({
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((u) => (
+                  {dbUsers.map((u) => (
                     <SelectItem key={u.id} value={u.id}>
                       {u.name}
                     </SelectItem>
