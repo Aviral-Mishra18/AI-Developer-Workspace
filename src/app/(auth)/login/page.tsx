@@ -23,6 +23,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -55,6 +56,7 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -75,6 +77,32 @@ export default function LoginPage() {
       rememberMe: false,
     },
   });
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground font-medium animate-pulse">
+            Verifying your session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground font-medium">
+            You are already logged in. Redirecting to dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
