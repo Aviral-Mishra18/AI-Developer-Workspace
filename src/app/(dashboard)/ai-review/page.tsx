@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,26 @@ export default function CodeReviewUploadPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("projects")
+          .select("id, name");
+        if (error) throw error;
+        setProjects(data || []);
+        if (data && data.length > 0) {
+          setSelectedProjectId(data[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -59,7 +79,8 @@ export default function CodeReviewUploadPage() {
           file_path: filePathStr,
           commit_id: `commit-${Math.floor(Math.random() * 1000000)}`,
           status: "completed",
-          created_by: user.id
+          created_by: user.id,
+          project_id: selectedProjectId || null
         })
         .select()
         .single();
@@ -123,6 +144,26 @@ export default function CodeReviewUploadPage() {
               <CardDescription>Drag and drop local source folders or connect Git</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Target Project Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="project-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Target Project</Label>
+                <div className="relative">
+                  <select
+                    id="project-select"
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="w-full h-10 px-3 py-2 rounded-lg border border-border bg-slate-50/50 dark:bg-slate-950/40 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-foreground transition-all"
+                  >
+                    <option value="">None (Standalone Scan)</option>
+                    {projects.map((proj) => (
+                      <option key={proj.id} value={proj.id}>
+                        {proj.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Drag and Drop Zone */}
               <div
                 onDragOver={(e) => e.preventDefault()}
