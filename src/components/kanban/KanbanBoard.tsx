@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import { tasks as initialTasks, Task, TaskStatus } from "@/lib/mock-data";
 import { TaskCard } from "./TaskCard";
@@ -30,7 +30,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [activeModalCol, setActiveModalCol] = useState<TaskStatus | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       let query = supabase
         .from("tasks")
@@ -64,16 +64,19 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       setTasks(formattedTasks);
     } catch (err: any) {
       console.error("Failed to load tasks:", err.message);
+      if (process.env.NODE_ENV === "development") {
+        toast.error(`Supabase fetch failed, showing mock data: ${err.message || "unknown error"}`);
+      }
       setTasks(projectId ? initialTasks.filter((t) => t.projectId === projectId) : initialTasks);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     setMounted(true);
     fetchTasks();
-  }, [projectId]);
+  }, [fetchTasks]);
 
   if (!mounted) return null;
 

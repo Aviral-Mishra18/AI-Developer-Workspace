@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Paperclip, Loader2, FileText, Image, Trash2 } from "lucide-react";
+import { Send, Paperclip, FileText, Image, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ChatInputProps {

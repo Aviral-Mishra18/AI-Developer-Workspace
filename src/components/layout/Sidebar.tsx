@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -132,9 +133,11 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       {/* Footer / User Profile Summary */}
       <div className="p-4 border-t border-border mt-auto">
         <div className={cn("flex items-center gap-3", isCollapsed ? "justify-center" : "")}>
-          <img
+          <Image
             src={profile?.avatar || "https://api.dicebear.com/8.x/avataaars/svg?seed=Guest"}
             alt="User Avatar"
+            width={32}
+            height={32}
             className="w-8 h-8 rounded-full border border-border bg-muted flex-shrink-0"
           />
           {!isCollapsed && (

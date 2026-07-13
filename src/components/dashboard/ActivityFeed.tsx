@@ -1,8 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { GitCommit, GitPullRequest, GitMerge, AlertCircle, MessageSquare, ShieldAlert, Cpu } from "lucide-react";
+import { GitCommit, GitPullRequest, GitMerge, AlertCircle, MessageSquare, Cpu } from "lucide-react";
 import { activityFeed } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
 
 export function ActivityFeed() {
   const getIcon = (type: string) => {

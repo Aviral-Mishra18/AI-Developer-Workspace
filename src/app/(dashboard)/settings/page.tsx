@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Shield, Bell, CreditCard, Paintbrush, Loader2, Key, Check } from "lucide-react";
+import { User, Shield, Bell, CreditCard, Paintbrush, Loader2, Check } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";

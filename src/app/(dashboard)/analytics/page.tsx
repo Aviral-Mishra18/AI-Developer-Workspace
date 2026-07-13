@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkspaceAnalytics } from "@/components/analytics/WorkspaceAnalytics";
 import { TeamProductivity } from "@/components/analytics/TeamProductivity";
 import { AIUsageStats } from "@/components/analytics/AIUsageStats";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart3, Users, Sparkles } from "lucide-react";
 
 export default function AnalyticsPage() {

@@ -5,6 +5,7 @@ import { projects as mockProjects } from "@/lib/mock-data";
 import { supabase } from "@/lib/supabase";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,6 +44,9 @@ export default function ProjectsPage() {
         setProjects(formattedData);
       } catch (err: any) {
         console.error("Failed to fetch projects:", err.message || JSON.stringify(err) || err);
+        if (process.env.NODE_ENV === "development") {
+          toast.error(`Supabase fetch failed, showing mock data: ${err.message || "unknown error"}`);
+        }
         // Fallback to mock data if the table doesn't exist or fetch fails
         setProjects(mockProjects);
       } finally {

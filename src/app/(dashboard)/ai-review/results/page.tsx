@@ -4,11 +4,10 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { codeReviewIssues, CodeReviewIssue } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, ShieldAlert, Cpu, Sparkles, CheckCircle2, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
+import { ShieldAlert, Cpu, CheckCircle2, ShieldCheck, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 

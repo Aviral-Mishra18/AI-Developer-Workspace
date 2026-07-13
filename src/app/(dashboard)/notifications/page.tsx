@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { notifications as initialNotifications, Notification } from "@/lib/mock-data";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Check, Trash2, ShieldAlert, Cpu, Sparkles, CheckCircle2, AlertTriangle, AlertCircle, MessageSquare } from "lucide-react";
+import { Bell, Check, Trash2, CheckCircle2, AlertTriangle, AlertCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export default function NotificationsPage() {

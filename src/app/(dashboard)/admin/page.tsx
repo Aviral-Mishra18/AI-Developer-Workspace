@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShieldAlert, Users, Building, Activity, ShieldCheck, Heart, AlertTriangle, Trash2, Search, SlidersHorizontal, RefreshCcw } from "lucide-react";
+import { Users, Building, Activity, Trash2, Search, SlidersHorizontal, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

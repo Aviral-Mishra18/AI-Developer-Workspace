@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mic, Upload, FileText, CheckCircle2, Play, Users, Clock, Loader2, Calendar } from "lucide-react";
-import { meetingNotes, users } from "@/lib/mock-data";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Mic, Upload, Loader2, Calendar } from "lucide-react";
+import { meetingNotes } from "@/lib/mock-data";
 import { toast } from "sonner";
 
 export default function MeetingNotesPage() {

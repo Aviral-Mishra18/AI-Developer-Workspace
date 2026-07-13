@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { FileSearch, GitBranch, UploadCloud, AlertCircle, FileCode, CheckCircle2, Loader2 } from "lucide-react";
+import { GitBranch, UploadCloud, FileCode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -33,8 +33,11 @@ export default function CodeReviewUploadPage() {
         if (data && data.length > 0) {
           setSelectedProjectId(data[0].id);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to fetch projects:", err);
+        if (process.env.NODE_ENV === "development") {
+          toast.error(`Supabase fetch failed, showing mock data: ${err.message || "unknown error"}`);
+        }
       }
     };
     fetchProjects();

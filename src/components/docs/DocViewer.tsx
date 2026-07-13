@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download, Link2, Copy, Check } from "lucide-react";
+import { Download, Link2, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { docContent } from "@/lib/mock-data";
 import { useState } from "react";

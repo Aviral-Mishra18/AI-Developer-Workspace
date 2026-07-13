@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { chatConversations, ChatConversation } from "@/lib/mock-data";
+import { ChatConversation } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatSidebarProps {

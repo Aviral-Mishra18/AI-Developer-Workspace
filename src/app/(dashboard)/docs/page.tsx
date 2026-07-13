@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { docs as initialDocs, docContent } from "@/lib/mock-data";
+import { docs as initialDocs } from "@/lib/mock-data";
 import { DocViewer } from "@/components/docs/DocViewer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, BookOpen, Clock, GitBranch, History } from "lucide-react";
+import { Search, Plus, BookOpen, Clock, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 

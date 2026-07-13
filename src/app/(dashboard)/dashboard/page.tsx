@@ -5,7 +5,7 @@ import { ProjectActivityChart } from "@/components/dashboard/ProjectActivityChar
 import { TaskCompletionChart } from "@/components/dashboard/TaskCompletionChart";
 import { AIUsageChart } from "@/components/dashboard/AIUsageChart";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import { FolderGit, Kanban, Users, Sparkles, AlertCircle } from "lucide-react";
+import { FolderGit, Kanban, Users, Sparkles } from "lucide-react";
 import { dashboardStats } from "@/lib/mock-data";
 import { useAuth } from "@/components/providers/AuthProvider";
 

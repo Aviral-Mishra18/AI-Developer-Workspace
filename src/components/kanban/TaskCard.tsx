@@ -2,7 +2,7 @@ import { Draggable } from "@hello-pangea/dnd";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, Edit2 } from "lucide-react";
+import { Calendar, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task, TaskPriority } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";

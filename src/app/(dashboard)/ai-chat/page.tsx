@@ -6,9 +6,7 @@ import { ChatSidebar } from "@/components/ai-chat/ChatSidebar";
 import { ChatMessage } from "@/components/ai-chat/ChatMessage";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { TypingIndicator } from "@/components/ai-chat/TypingIndicator";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, MessageSquare, Code, Cpu } from "lucide-react";
 
 export default function AIChatPage() {
   const [conversations, setConversations] = useState(initialConversations);

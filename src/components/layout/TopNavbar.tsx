@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,6 @@ import {
   ChevronDown,
   LogOut,
   User,
-  Settings,
   Building,
   Menu,
   Check,

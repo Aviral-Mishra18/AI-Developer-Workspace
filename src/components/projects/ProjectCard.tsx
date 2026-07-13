@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, GitBranch } from "lucide-react";
+import { Clock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 

@@ -6,7 +6,7 @@ import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Percent, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 

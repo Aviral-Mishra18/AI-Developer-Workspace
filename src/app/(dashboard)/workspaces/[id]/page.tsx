@@ -2,13 +2,13 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { workspaces as mockWorkspaces, users as mockUsers, activityFeed } from "@/lib/mock-data";
+import { workspaces as mockWorkspaces, users as mockUsers } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Shield, ShieldAlert, Users, FolderGit, Database, UserPlus, Loader2 } from "lucide-react";
+import { Shield, Users, FolderGit, Database, UserPlus, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
