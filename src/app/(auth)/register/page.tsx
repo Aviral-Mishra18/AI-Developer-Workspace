@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/lib/schemas";
@@ -23,7 +23,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/components/providers/AuthProvider";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -56,10 +55,13 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { user: authUser, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
 
   const {
     register,
@@ -79,32 +81,6 @@ export default function RegisterPage() {
   });
 
   const passwordVal = watch("password", "");
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground font-medium animate-pulse">
-            Verifying your session...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (authUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground font-medium">
-            You are already logged in. Redirecting to dashboard...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Basic password strength checker logic
   const checkStrength = (pass: string) => {

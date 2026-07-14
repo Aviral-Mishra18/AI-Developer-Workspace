@@ -25,9 +25,13 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (error) {
+    console.error("Middleware auth error:", error);
+  }
 
   const pathname = request.nextUrl.pathname;
   const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
@@ -50,9 +54,22 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except static files and image optimization files
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/",
+    "/dashboard/:path*",
+    "/projects/:path*",
+    "/workspaces/:path*",
+    "/tasks/:path*",
+    "/ai-chat/:path*",
+    "/ai-review/:path*",
+    "/analytics/:path*",
+    "/meetings/:path*",
+    "/notifications/:path*",
+    "/settings/:path*",
+    "/admin/:path*",
+    "/docs/:path*",
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
   ],
 };
