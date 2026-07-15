@@ -29,7 +29,7 @@ import {
 import { workspaces, notifications, currentUser } from "@/lib/mock-data";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -40,6 +40,7 @@ interface TopNavbarProps {
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0]);
   const [unreadNotifications, setUnreadNotifications] = useState(
     notifications.filter((n) => !n.read)
@@ -64,7 +65,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    router.push("/login");
   };
 
   const navItems = [
