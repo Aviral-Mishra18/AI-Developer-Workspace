@@ -8,7 +8,7 @@ export function TypingIndicator() {
       </div>
       <div className="flex-1 space-y-2 py-1">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-xs text-foreground/80">NexusAI Assistant</span>
+          <span className="font-semibold text-xs text-foreground/80">Vionex Assistant</span>
           <span className="text-[10px] text-muted-foreground">Thinking...</span>
         </div>
         <div className="flex items-center gap-1 mt-1">

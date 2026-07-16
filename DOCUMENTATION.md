@@ -1,12 +1,12 @@
-# 🚀 NexusAI - Comprehensive Project Architecture & Documentation
+# 🚀 Vionex - Comprehensive Project Architecture & Documentation
 
-This document serves as the **Ultimate Master Reference** for the NexusAI frontend architecture. Crafted for senior engineers, DevOps, and AI assistants, it provides deep technical context, architectural decisions, and an exhaustive breakdown of every configuration file, module, and directory in this repository.
+This document serves as the **Ultimate Master Reference** for the Vionex frontend architecture. Crafted for senior engineers, DevOps, and AI assistants, it provides deep technical context, architectural decisions, and an exhaustive breakdown of every configuration file, module, and directory in this repository.
 
 ---
 
 ## 1. 📖 Project Overview & Domain Context
 
-**NexusAI** is a next-generation enterprise SaaS platform designed to be an AI-powered collaboration dashboard and workspace management tool. 
+**Vionex** is a next-generation enterprise SaaS platform designed to be an AI-powered collaboration dashboard and workspace management tool. 
 
 **Key Features Include:**
 - **AI Integration**: Features an AI-powered chat (`/ai-chat`) and an AI-driven document/code review system (`/ai-review`).
@@ -18,7 +18,7 @@ This document serves as the **Ultimate Master Reference** for the NexusAI fronte
 
 ## 2. 🛠️ Tech Stack Step-by-Step Deep Dive
 
-The project architecture is built upon a highly modernized frontend stack. Here is the step-by-step breakdown of every technology layer and its exact purpose within NexusAI.
+The project architecture is built upon a highly modernized frontend stack. Here is the step-by-step breakdown of every technology layer and its exact purpose within Vionex.
 
 ### Step 1: Core Engine & Language Layer
 - **Next.js (v16.2.7)**: The foundational meta-framework. We exclusively use the **App Router** (`src/app`) for server-side rendering, advanced routing, and React Server Components (RSC) to ensure maximum performance and SEO capabilities.
@@ -160,4 +160,4 @@ When working in this repository, follow these engineering standards:
 5. **State Management**: Leverage Server Components where possible; use Context and custom hooks (`src/hooks/`) purely for interactive client UI state.
 
 ---
-*Maintained by Senior Engineering Team - NexusAI.*
+*Maintained by Senior Engineering Team - Vionex.*

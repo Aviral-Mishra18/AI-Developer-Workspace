@@ -118,7 +118,7 @@ Let me know if you would like me to generate a fully styled component code templ
           AI Assistant Chat
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Chat with NexusAI assistant, generate codebase documentation, or debug components.
+          Chat with Vionex assistant, generate codebase documentation, or debug components.
         </p>
       </div>
 

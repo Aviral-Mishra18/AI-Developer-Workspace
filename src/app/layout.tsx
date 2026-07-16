@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NexusAI - Enterprise SaaS Platform",
+  title: "Vionex SaaS Platform",
   description: "Next-generation workspace and AI-powered collaboration dashboard",
 };
 

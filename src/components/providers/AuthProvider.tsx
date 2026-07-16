@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               Securing Session
             </h2>
             <p className="text-xs text-muted-foreground font-medium tracking-wider uppercase animate-pulse">
-              NexusAI Workspace
+              Vionex Workspace
             </p>
           </div>
         </div>

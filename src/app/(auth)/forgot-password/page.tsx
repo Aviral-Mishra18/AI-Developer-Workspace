@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="alex.morgan@nexusai.com"
+                    placeholder="alex.morgan@Vionex.com"
                     className="border-border pl-10"
                     {...register("email")}
                   />

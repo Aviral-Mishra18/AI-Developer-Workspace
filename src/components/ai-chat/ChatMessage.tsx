@@ -49,7 +49,7 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
       <div className="flex-1 space-y-1.5 overflow-hidden">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-xs text-foreground/80">
-            {role === "assistant" ? "NexusAI Assistant" : "You"}
+            {role === "assistant" ? "Vionex Assistant" : "You"}
           </span>
           <span className="text-[10px] text-muted-foreground">{timestamp}</span>
         </div>

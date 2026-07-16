@@ -1,6 +1,6 @@
-# 🚀 NexusAI Backend Documentation (Supabase BaaS)
+# 🚀 Vionex Backend Documentation (Supabase BaaS)
 
-This document provides a comprehensive analysis and architectural overview of the backend infrastructure for **NexusAI**.
+This document provides a comprehensive analysis and architectural overview of the backend infrastructure for **Vionex**.
 
 The project adopts a **Serverless Backend Architecture**, leveraging **Supabase** (a Backend-as-a-Service platform) instead of a traditional monolithic Node.js/Python server. This strategy offloads database management, authentication, and security rules directly to managed PostgreSQL, enhancing velocity and scalability.
 

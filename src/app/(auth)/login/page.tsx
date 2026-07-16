@@ -162,7 +162,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="alex.morgan@nexusai.com"
+                placeholder="alex.morgan@Vionex.com"
                 className="border-border"
                 {...register("email")}
               />

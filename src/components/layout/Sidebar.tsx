@@ -62,7 +62,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
               <Sparkles className="w-4 h-4" />
             </div>
             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              NexusAI
+              Vionex
             </span>
           </Link>
         )}

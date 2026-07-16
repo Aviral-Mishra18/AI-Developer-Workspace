@@ -6,7 +6,7 @@
 export const currentUser = {
   id: "u1",
   name: "Alex Morgan",
-  email: "alex.morgan@nexusai.com",
+  email: "alex.morgan@Vionex.com",
   avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Alex",
   role: "Admin",
   bio: "Full-stack developer & AI enthusiast",
@@ -15,21 +15,21 @@ export const currentUser = {
 
 export const users = [
   currentUser,
-  { id: "u2", name: "Sarah Chen", email: "sarah@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Sarah", role: "Developer" },
-  { id: "u3", name: "Marcus Johnson", email: "marcus@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Marcus", role: "Designer" },
-  { id: "u4", name: "Emily Davis", email: "emily@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Emily", role: "PM" },
-  { id: "u5", name: "James Wilson", email: "james@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=James", role: "Developer" },
-  { id: "u6", name: "Priya Patel", email: "priya@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Priya", role: "DevOps" },
-  { id: "u7", name: "Tom Baker", email: "tom@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Tom", role: "QA" },
-  { id: "u8", name: "Lisa Wang", email: "lisa@nexusai.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Lisa", role: "Developer" },
+  { id: "u2", name: "Sarah Chen", email: "sarah@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Sarah", role: "Developer" },
+  { id: "u3", name: "Marcus Johnson", email: "marcus@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Marcus", role: "Designer" },
+  { id: "u4", name: "Emily Davis", email: "emily@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Emily", role: "PM" },
+  { id: "u5", name: "James Wilson", email: "james@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=James", role: "Developer" },
+  { id: "u6", name: "Priya Patel", email: "priya@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Priya", role: "DevOps" },
+  { id: "u7", name: "Tom Baker", email: "tom@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Tom", role: "QA" },
+  { id: "u8", name: "Lisa Wang", email: "lisa@Vionex.com", avatar: "https://api.dicebear.com/8.x/avataaars/svg?seed=Lisa", role: "Developer" },
 ];
 
 // --- Workspaces ---
 export const workspaces = [
   {
     id: "ws1",
-    name: "NexusAI Platform",
-    description: "Main product development workspace for the NexusAI platform. Includes all frontend, backend, and ML services.",
+    name: "Vionex Platform",
+    description: "Main product development workspace for the Vionex platform. Includes all frontend, backend, and ML services.",
     memberCount: 24,
     projectCount: 8,
     lastActivity: "2 hours ago",
@@ -41,7 +41,7 @@ export const workspaces = [
   {
     id: "ws2",
     name: "Marketing & Design",
-    description: "Design assets, marketing campaigns, and brand materials for NexusAI.",
+    description: "Design assets, marketing campaigns, and brand materials for Vionex.",
     memberCount: 12,
     projectCount: 5,
     lastActivity: "30 minutes ago",
@@ -53,7 +53,7 @@ export const workspaces = [
   {
     id: "ws3",
     name: "Open Source Projects",
-    description: "Community open-source projects and contributions maintained by the NexusAI team.",
+    description: "Community open-source projects and contributions maintained by the Vionex team.",
     memberCount: 156,
     projectCount: 12,
     lastActivity: "5 minutes ago",
@@ -226,7 +226,7 @@ export const notifications: Notification[] = [
   { id: "n2", title: "New Comment", message: "Marcus mentioned you in #89 — @alex can you review this fix?", time: "15 minutes ago", read: false, type: "mention" },
   { id: "n3", title: "Build Failed", message: "CI pipeline failed on branch feature/auth-flow — 3 test failures", time: "1 hour ago", read: false, type: "error" },
   { id: "n4", title: "Deployment Successful", message: "Production deployment v2.4.1 completed successfully", time: "5 hours ago", read: true, type: "success" },
-  { id: "n5", title: "New Team Member", message: "Lisa Wang has joined the NexusAI Platform workspace", time: "1 day ago", read: true, type: "info" },
+  { id: "n5", title: "New Team Member", message: "Lisa Wang has joined the Vionex Platform workspace", time: "1 day ago", read: true, type: "info" },
   { id: "n6", title: "Storage Warning", message: "Research Lab workspace is at 90% storage capacity", time: "2 days ago", read: true, type: "warning" },
   { id: "n7", title: "Sprint Completed", message: "Sprint 14 completed with 92% task completion rate", time: "3 days ago", read: true, type: "info" },
   { id: "n8", title: "Security Alert", message: "Unusual login attempt detected from IP 192.168.1.45", time: "4 days ago", read: true, type: "error" },
@@ -395,7 +395,7 @@ export const docs: DocItem[] = [
 
 export const docContent = `# Getting Started Guide
 
-Welcome to the **NexusAI Platform** documentation. This guide will help you set up your development environment and start building.
+Welcome to the **Vionex Platform** documentation. This guide will help you set up your development environment and start building.
 
 ## Prerequisites
 
@@ -408,7 +408,7 @@ Welcome to the **NexusAI Platform** documentation. This guide will help you set 
 
 \`\`\`bash
 # Clone the repository
-git clone https://github.com/nexusai/platform.git
+git clone https://github.com/Vionex/platform.git
 
 # Install dependencies
 cd platform
@@ -520,14 +520,14 @@ export interface ActivityLog {
 }
 
 export const activityLogs: ActivityLog[] = [
-  { id: "al1", timestamp: "2025-03-07 14:30:22", user: "alex.morgan@nexusai.com", action: "Login", resource: "Auth Service", ip: "192.168.1.10", status: "success" },
-  { id: "al2", timestamp: "2025-03-07 14:28:15", user: "sarah.chen@nexusai.com", action: "Create Project", resource: "Project Service", ip: "192.168.1.22", status: "success" },
+  { id: "al1", timestamp: "2025-03-07 14:30:22", user: "alex.morgan@Vionex.com", action: "Login", resource: "Auth Service", ip: "192.168.1.10", status: "success" },
+  { id: "al2", timestamp: "2025-03-07 14:28:15", user: "sarah.chen@Vionex.com", action: "Create Project", resource: "Project Service", ip: "192.168.1.22", status: "success" },
   { id: "al3", timestamp: "2025-03-07 14:25:01", user: "unknown@external.com", action: "Login Attempt", resource: "Auth Service", ip: "45.33.12.88", status: "failed" },
-  { id: "al4", timestamp: "2025-03-07 14:20:45", user: "marcus@nexusai.com", action: "Delete File", resource: "Storage Service", ip: "192.168.1.15", status: "success" },
+  { id: "al4", timestamp: "2025-03-07 14:20:45", user: "marcus@Vionex.com", action: "Delete File", resource: "Storage Service", ip: "192.168.1.15", status: "success" },
   { id: "al5", timestamp: "2025-03-07 14:18:30", user: "system", action: "Backup Complete", resource: "Database", ip: "10.0.0.1", status: "success" },
-  { id: "al6", timestamp: "2025-03-07 14:15:00", user: "priya@nexusai.com", action: "Deploy", resource: "Production", ip: "192.168.1.30", status: "success" },
+  { id: "al6", timestamp: "2025-03-07 14:15:00", user: "priya@Vionex.com", action: "Deploy", resource: "Production", ip: "192.168.1.30", status: "success" },
   { id: "al7", timestamp: "2025-03-07 14:10:22", user: "system", action: "High Memory Usage", resource: "ML Pipeline", ip: "10.0.0.5", status: "warning" },
-  { id: "al8", timestamp: "2025-03-07 14:05:11", user: "james@nexusai.com", action: "API Key Generated", resource: "Auth Service", ip: "192.168.1.18", status: "success" },
+  { id: "al8", timestamp: "2025-03-07 14:05:11", user: "james@Vionex.com", action: "API Key Generated", resource: "Auth Service", ip: "192.168.1.18", status: "success" },
 ];
 
 // --- Settings / Billing ---

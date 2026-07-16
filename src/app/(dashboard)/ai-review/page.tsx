@@ -210,7 +210,7 @@ export default function CodeReviewUploadPage() {
                   <GitBranch className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="git-url"
-                    placeholder="https://github.com/company/nexus-app"
+                    placeholder="https://github.com/company/Vionex-app"
                     value={gitUrl}
                     onChange={(e) => setGitUrl(e.target.value)}
                     className="pl-10 border-border bg-card"
