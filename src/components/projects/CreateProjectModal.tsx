@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { users } from "@/lib/mock-data";
+
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
 
@@ -84,7 +84,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
         description: newDbProject.description,
         status: newDbProject.status,
         progress: newDbProject.progress,
-        team: [users[0], users[1]], // Default members assigned for prototype
+        team: [user], // Default members assigned for prototype
         lastUpdated: "Just now",
         createdAt: newDbProject.created_at,
       };

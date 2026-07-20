@@ -2,9 +2,15 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from "recharts";
-import { aiUsageData } from "@/lib/mock-data";
 
-export function AIUsageChart() {
+export interface AIUsageData {
+  date: string;
+  chatRequests: number;
+  codeReviews: number;
+  docGen: number;
+}
+
+export function AIUsageChart({ data }: { data: AIUsageData[] }) {
   return (
     <Card className="border border-border bg-card shadow-sm">
       <CardHeader>
@@ -14,8 +20,9 @@ export function AIUsageChart() {
       <CardContent className="h-[300px] pl-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} aspect={undefined}>
           <LineChart
-            data={aiUsageData}
+            data={data}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+
           >
             <XAxis
               dataKey="date"

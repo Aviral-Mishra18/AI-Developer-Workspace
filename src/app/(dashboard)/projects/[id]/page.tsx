@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { projects } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -18,7 +18,48 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const resolvedParams = React.use(params);
   const projectId = resolvedParams.id;
 
-  const project = projects.find((p) => p.id === projectId) || projects[0];
+  const [project, setProject] = React.useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const { data: proj, error } = await supabase
+          .from("projects")
+          .select("*, project_members(user_id, role, profiles(id, name, avatar))")
+          .eq("id", projectId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (proj) {
+          const team = proj.project_members?.map((m: any) => ({
+            id: m.profiles?.id || "u-unknown",
+            name: m.profiles?.name || "Member",
+            avatar: m.profiles?.avatar || `https://api.dicebear.com/8.x/avataaars/svg?seed=${m.profiles?.id}`,
+          })) || [];
+
+          setProject({
+            id: proj.id,
+            name: proj.name,
+            description: proj.description,
+            status: proj.status,
+            progress: proj.progress || 0,
+            createdAt: new Date(proj.created_at).toLocaleDateString(),
+            lastUpdated: new Date(proj.updated_at).toLocaleDateString(),
+            team,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch project:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProject();
+  }, [projectId]);
+
+  if (isLoading) return <div className="p-8 flex justify-center">Loading project...</div>;
+  if (!project) return <div className="p-8 text-center font-bold">Project not found.</div>;
 
   return (
     <div className="space-y-6">
@@ -70,7 +111,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
           <CardContent className="flex items-center gap-2">
             <div className="text-2xl font-bold">{project.team.length}</div>
             <div className="flex -space-x-1.5 overflow-hidden ml-2">
-              {project.team.map((m) => (
+              {project.team.map((m: any) => (
                 <Avatar key={m.id} className="h-5 w-5 ring-1 ring-background border border-border">
                   <AvatarImage src={m.avatar} />
                   <AvatarFallback>{m.name.slice(0, 2).toUpperCase()}</AvatarFallback>

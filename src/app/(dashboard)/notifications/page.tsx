@@ -1,7 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { notifications as initialNotifications, Notification } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
+
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,8 +19,35 @@ import { Bell, Check, Trash2, CheckCircle2, AlertTriangle, AlertCircle, MessageS
 import { toast } from "sonner";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchNotifs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (data) {
+          setNotifications(data.map(n => ({
+            id: n.id,
+            type: n.type,
+            title: n.title,
+            message: n.message,
+            time: new Date(n.created_at).toLocaleString(),
+            read: n.read
+          })));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchNotifs();
+  }, [user]);
 
   const handleMarkRead = (id: string) => {
     setNotifications((prev) =>
@@ -19,14 +56,18 @@ export default function NotificationsPage() {
     toast.success("Notification marked as read");
   };
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     toast.success("All notifications marked as read");
+    if (user) {
+      await supabase.from("notifications").update({ read: true }).eq("user_id", user.id);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     toast.success("Notification deleted");
+    await supabase.from("notifications").delete().eq("id", id);
   };
 
   const filteredNotifications = notifications.filter((n) => {

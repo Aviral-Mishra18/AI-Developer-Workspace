@@ -2,9 +2,17 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts";
-import { teamVelocityData } from "@/lib/mock-data";
 
 export function TeamProductivity() {
+  const teamVelocityData = [
+    { sprint: "S10", planned: 34, completed: 28 },
+    { sprint: "S11", planned: 38, completed: 35 },
+    { sprint: "S12", planned: 42, completed: 40 },
+    { sprint: "S13", planned: 36, completed: 32 },
+    { sprint: "S14", planned: 40, completed: 38 },
+    { sprint: "S15", planned: 45, completed: 42 },
+  ];
+
   return (
     <div className="space-y-6">
       <Card className="border-border bg-card shadow-sm">

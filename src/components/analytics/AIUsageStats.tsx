@@ -3,10 +3,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
-import { aiModelUsageData } from "@/lib/mock-data";
 
 export function AIUsageStats() {
   const COLORS = ["oklch(0.205 0 0)", "oklch(0.556 0 0)", "oklch(0.439 0 0)", "oklch(0.371 0 0)"];
+
+  const aiModelUsageData = [
+    { name: "GPT-4o", requests: 8450, cost: 245.80, percentage: 65 },
+    { name: "Claude 3.5", requests: 2840, cost: 156.20, percentage: 22 },
+    { name: "Gemini Pro", requests: 1200, cost: 78.40, percentage: 9 },
+    { name: "Llama 3", requests: 520, cost: 12.00, percentage: 4 },
+  ];
 
   return (
     <div className="space-y-6">

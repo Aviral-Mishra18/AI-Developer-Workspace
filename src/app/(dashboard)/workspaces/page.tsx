@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { workspaces as initialWorkspaces } from "@/lib/mock-data";
 import { WorkspaceCard } from "@/components/workspace/WorkspaceCard";
 import { CreateWorkspaceModal } from "@/components/workspace/CreateWorkspaceModal";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,7 @@ export default function WorkspaceListPage() {
         setWorkspaces(enrichedWorkspaces);
       } catch (err: any) {
         console.error("Failed to fetch workspaces:", err.message);
-        setWorkspaces(initialWorkspaces);
+        setWorkspaces([]);
       } finally {
         setIsLoading(false);
       }

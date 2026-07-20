@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { users as initialUsers, workspaces as initialWorkspaces, activityLogs as initialLogs, systemHealthData } from "@/lib/mock-data";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +15,37 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function AdminPage() {
-  const [users, setUsers] = useState(initialUsers);
-  const [workspaces, setWorkspaces] = useState(initialWorkspaces);
-  const [logs, setLogs] = useState(initialLogs);
+  const [users, setUsers] = useState<any[]>([]);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: usersData } = await supabase.from('profiles').select('*');
+      if (usersData) setUsers(usersData.map((u: any) => ({ ...u, role: u.system_role || 'User' })));
+
+      const { data: wsData } = await supabase.from('workspaces').select('*');
+      if (wsData) setWorkspaces(wsData.map((w: any) => ({ ...w, owner: { name: w.created_by || 'Unknown' }, projectCount: 0, storage: '0.1 GB' })));
+
+      const { data: logData } = await supabase.from('activity_logs').select('*');
+      if (logData) setLogs(logData.map((l: any) => ({ 
+        id: l.id,
+        user: l.user_id || 'System',
+        action: l.action,
+        resource: l.resource,
+        timestamp: new Date(l.created_at).toLocaleString(),
+        ip: l.ip_address || '127.0.0.1',
+        status: l.status
+      })));
+    };
+    fetchData();
+  }, []);
+
+  const systemHealthData = {
+    apiServer: { status: "operational" as const, uptime: 99.99, responseTime: 45 },
+    database: { status: "operational" as const, uptime: 99.95, responseTime: 12 },
+    storage: { status: "operational" as const, uptime: 99.99, responseTime: 88 },
+  };
   
   const [userSearch, setUserSearch] = useState("");
   const [logSearch, setLogSearch] = useState("");

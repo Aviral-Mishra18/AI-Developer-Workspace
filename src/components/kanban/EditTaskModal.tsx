@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { users, Task, TaskStatus, TaskPriority } from "@/lib/mock-data";
+import { Task, TaskStatus, TaskPriority } from "@/types/kanban";
 import { supabase } from "@/lib/supabase";
 
 type EditTaskValues = z.infer<typeof createTaskSchema>;
@@ -60,7 +60,7 @@ export function EditTaskModal({
         setDbUsers(data || []);
       } catch (err: any) {
         console.error("Failed to load profiles for assignee list:", err.message);
-        setDbUsers(users);
+        setDbUsers([]);
       }
     };
     if (isOpen) {
@@ -244,7 +244,7 @@ export function EditTaskModal({
             <div className="space-y-2">
               <Label htmlFor="edit-assigneeId">Assignee</Label>
               <Select
-                defaultValue={task.assignee.id}
+                defaultValue={task.assignee?.id || undefined}
                 onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}
               >
                 <SelectTrigger className="border-border bg-card">

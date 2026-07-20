@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
-import { tasks as initialTasks, Task, TaskStatus } from "@/lib/mock-data";
 import { TaskCard } from "./TaskCard";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { EditTaskModal } from "./EditTaskModal";
@@ -10,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+
+import { Task, TaskStatus, TaskPriority } from "@/types/kanban";
 
 interface KanbanBoardProps {
   projectId?: string;
@@ -25,7 +26,7 @@ const COLUMNS: { id: TaskStatus; title: string }[] = [
 
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [mounted, setMounted] = useState(false);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeModalCol, setActiveModalCol] = useState<TaskStatus | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -47,7 +48,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       const formattedTasks = (data || []).map((t: any) => ({
         id: t.id,
         title: t.title,
-        description: t.description,
+        description: t.description || "",
         status: t.status,
         priority: t.priority,
         dueDate: t.due_date ? new Date(t.due_date).toLocaleDateString() : "",
@@ -65,9 +66,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     } catch (err: any) {
       console.error("Failed to load tasks:", err.message);
       if (process.env.NODE_ENV === "development") {
-        toast.error(`Supabase fetch failed, showing mock data: ${err.message || "unknown error"}`);
+        toast.error(`Supabase fetch failed: ${err.message || "unknown error"}`);
       }
-      setTasks(projectId ? initialTasks.filter((t) => t.projectId === projectId) : initialTasks);
+      setTasks([]);
     } finally {
       setIsLoading(false);
     }

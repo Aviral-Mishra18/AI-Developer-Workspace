@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Task, TaskPriority } from "@/lib/mock-data";
+import { Task, TaskPriority } from "@/types/kanban";
 import { Button } from "@/components/ui/button";
 
 interface TaskCardProps {

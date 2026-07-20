@@ -1,9 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GitCommit, GitPullRequest, GitMerge, AlertCircle, MessageSquare, Cpu } from "lucide-react";
-import { activityFeed } from "@/lib/mock-data";
 
-export function ActivityFeed() {
+export interface ActivityFeedItem {
+  id: string;
+  type: string;
+  action: string;
+  target: string;
+  time: string;
+  user: {
+    name: string;
+    avatar: string;
+  };
+}
+
+export function ActivityFeed({ data }: { data: ActivityFeedItem[] }) {
   const getIcon = (type: string) => {
     switch (type) {
       case "commit":
@@ -31,7 +42,7 @@ export function ActivityFeed() {
       </CardHeader>
       <CardContent>
         <div className="relative pl-6 space-y-6 after:absolute after:inset-y-0 after:left-2.5 after:w-px after:bg-border/60">
-          {activityFeed.map((item) => (
+          {data.map((item) => (
             <div key={item.id} className="relative flex items-start gap-3 text-sm">
               <div className="absolute -left-6 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-background border border-border shadow-sm">
                 {getIcon(item.type)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -8,15 +8,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Mic, Upload, Loader2, Calendar } from "lucide-react";
-import { meetingNotes } from "@/lib/mock-data";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function MeetingNotesPage() {
+  const { profile } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [processProgress, setProcessProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
-  const [showNotes, setShowNotes] = useState(false);
-  const [actionItems, setActionItems] = useState(meetingNotes[0].actionItems);
+  
+  const [activeMeeting, setActiveMeeting] = useState<any>(null);
+  const [actionItems, setActionItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Try to load the most recent meeting note
+    const fetchLatestMeeting = async () => {
+      if (!profile?.id) return;
+      try {
+        const { data: meetings, error: meetingError } = await supabase
+          .from('meeting_notes')
+          .select('*')
+          .eq('created_by', profile.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+          
+        if (meetingError) throw meetingError;
+        
+        if (meetings && meetings.length > 0) {
+          const meeting = meetings[0];
+          setActiveMeeting(meeting);
+          
+          const { data: items, error: itemsError } = await supabase
+            .from('meeting_action_items')
+            .select('*')
+            .eq('meeting_id', meeting.id);
+            
+          if (itemsError) throw itemsError;
+          if (items) setActionItems(items);
+        }
+      } catch (err: any) {
+        console.error("Failed to load meetings", err);
+      }
+    };
+    fetchLatestMeeting();
+  }, [profile]);
 
   const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,26 +71,90 @@ export default function MeetingNotesPage() {
     setIsProcessing(true);
     setProcessProgress(10);
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       setProcessProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
-          setTimeout(() => {
-            setIsProcessing(false);
-            setShowNotes(true);
-            toast.success("Audio analysis and transcription complete!");
-          }, 600);
           return 100;
         }
         return prev + 15;
       });
     }, 300);
+
+    setTimeout(async () => {
+      clearInterval(interval);
+      setProcessProgress(100);
+      try {
+        if (!profile?.id) throw new Error("No profile");
+        
+        // Find a project to attach to (schema requires project_id)
+        const { data: projects } = await supabase.from('projects').select('id').limit(1);
+        const projectId = projects?.[0]?.id;
+        
+        if (!projectId) {
+           throw new Error("You need to create a project first before saving meetings.");
+        }
+
+        // Simulate creating a meeting
+        const { data: meeting, error: meetingError } = await supabase
+          .from('meeting_notes')
+          .insert({
+            project_id: projectId,
+            title: "Generated Meeting Notes",
+            date: new Date().toISOString().split('T')[0],
+            duration: "45 min",
+            status: "completed",
+            summary: "Discussed the new design system implementation and state management refactor. Agreed to use Zustand for global state and Shadcn for UI components.",
+            speakers: [
+              { name: "You", duration: "15m", percentage: 33 },
+              { name: "Team", duration: "30m", percentage: 67 }
+            ],
+            created_by: profile.id
+          })
+          .select()
+          .single();
+          
+        if (meetingError) throw meetingError;
+
+        // Simulate action items
+        const { data: items, error: itemsError } = await supabase
+          .from('meeting_action_items')
+          .insert([
+            { meeting_id: meeting.id, text: "Initialize Zustand store", created_by: profile.id },
+            { meeting_id: meeting.id, text: "Install Shadcn UI", created_by: profile.id }
+          ])
+          .select();
+          
+        if (itemsError) throw itemsError;
+
+        setActiveMeeting(meeting);
+        setActionItems(items || []);
+        toast.success("Audio analysis and transcription complete!");
+      } catch (err: any) {
+        toast.error("Failed to save transcribed meeting: " + err.message);
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 2500);
   };
 
-  const handleToggleAction = (id: string) => {
+  const handleToggleAction = async (id: string, currentStatus: boolean) => {
+    // Optimistic update
     setActionItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
+      prev.map((item) => (item.id === id ? { ...item, done: !currentStatus } : item))
     );
+    try {
+      await supabase
+        .from('meeting_action_items')
+        .update({ done: !currentStatus })
+        .eq('id', id);
+    } catch (err: any) {
+      toast.error("Failed to update action item");
+      // Revert
+      setActionItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, done: currentStatus } : item))
+      );
+    }
   };
 
   return (
@@ -69,7 +169,7 @@ export default function MeetingNotesPage() {
         </p>
       </div>
 
-      {!showNotes ? (
+      {!activeMeeting ? (
         <div className="max-w-2xl mx-auto py-8">
           <Card className="border-border bg-card shadow-sm">
             <CardHeader className="text-center">
@@ -151,10 +251,10 @@ export default function MeetingNotesPage() {
             <Card className="border-border bg-card shadow-sm">
               <CardHeader className="pb-3 border-b border-border/40">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold">{meetingNotes[0].title}</CardTitle>
+                  <CardTitle className="text-lg font-semibold">{activeMeeting.title}</CardTitle>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
-                    {meetingNotes[0].date} ({meetingNotes[0].duration})
+                    {activeMeeting.date} ({activeMeeting.duration})
                   </span>
                 </div>
               </CardHeader>
@@ -162,7 +262,7 @@ export default function MeetingNotesPage() {
                 <div className="space-y-1.5">
                   <h3 className="font-semibold text-sm">Executive Summary</h3>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    {meetingNotes[0].summary}
+                    {activeMeeting.summary}
                   </p>
                 </div>
               </CardContent>
@@ -182,7 +282,7 @@ export default function MeetingNotesPage() {
                         <Checkbox
                           id={item.id}
                           checked={item.done}
-                          onCheckedChange={() => handleToggleAction(item.id)}
+                          onCheckedChange={() => handleToggleAction(item.id, item.done)}
                         />
                         <label
                           htmlFor={item.id}
@@ -194,10 +294,13 @@ export default function MeetingNotesPage() {
                         </label>
                       </div>
                       <Badge variant="outline" className="text-[10px]">
-                        {item.assignee}
+                        Unassigned
                       </Badge>
                     </div>
                   ))}
+                  {actionItems.length === 0 && (
+                    <div className="py-3 text-sm text-muted-foreground">No action items found.</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -212,7 +315,7 @@ export default function MeetingNotesPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  {meetingNotes[0].speakers.map((sp) => (
+                  {(activeMeeting.speakers || []).map((sp: any) => (
                     <div key={sp.name} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-medium">
                         <span className="flex items-center gap-1.5">
@@ -229,7 +332,7 @@ export default function MeetingNotesPage() {
                 </div>
 
                 <div className="border-t border-border/40 pt-4 flex gap-2">
-                  <Button variant="outline" onClick={() => setShowNotes(false)} className="w-full text-xs h-8">
+                  <Button variant="outline" onClick={() => { setActiveMeeting(null); setUploadedFile(null); }} className="w-full text-xs h-8">
                     Upload another
                   </Button>
                 </div>

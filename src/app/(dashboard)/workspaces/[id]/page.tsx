@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { workspaces as mockWorkspaces, users as mockUsers } from "@/lib/mock-data";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,9 +44,6 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
         if (wsError) throw wsError;
 
         if (!ws) {
-          const fallbackWs = mockWorkspaces.find((w) => w.id === workspaceId) || mockWorkspaces[0];
-          setWorkspace(fallbackWs);
-          setMembers(mockUsers.slice(0, 5));
           setIsLoading(false);
           return;
         }
@@ -85,9 +82,6 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
         setMembers(formattedMembers);
       } catch (err: any) {
         console.error("Failed to load workspace details:", err.message);
-        const fallbackWs = mockWorkspaces.find((w) => w.id === workspaceId) || mockWorkspaces[0];
-        setWorkspace(fallbackWs);
-        setMembers(mockUsers.slice(0, 5));
       } finally {
         setIsLoading(false);
       }
@@ -261,7 +255,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
 
         {/* Activity Timeline */}
         <TabsContent value="activity" className="mt-4">
-          <ActivityFeedWidget />
+          <ActivityFeedWidget data={[]} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,10 +1,57 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { workspaceGrowthData, taskCompletionData } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 
 export function WorkspaceAnalytics() {
+  const [taskCompletionData, setTaskCompletionData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTaskData = async () => {
+      try {
+        const { data, error } = await supabase.from('tasks').select('status');
+        if (error) throw error;
+        
+        const counts = { backlog: 0, todo: 0, "in-progress": 0, review: 0, done: 0 };
+        (data || []).forEach(task => {
+          if (counts[task.status as keyof typeof counts] !== undefined) {
+            counts[task.status as keyof typeof counts]++;
+          }
+        });
+        
+        setTaskCompletionData([
+          { name: "Backlog", value: counts.backlog, fill: "var(--chart-1)" },
+          { name: "Todo", value: counts.todo, fill: "var(--chart-2)" },
+          { name: "In Progress", value: counts["in-progress"], fill: "var(--chart-3)" },
+          { name: "Review", value: counts.review, fill: "var(--chart-4)" },
+          { name: "Done", value: counts.done, fill: "var(--chart-5)" },
+        ]);
+      } catch (err) {
+        console.error("Failed to fetch task stats", err);
+        // Fallback
+        setTaskCompletionData([
+          { name: "Backlog", value: 24, fill: "var(--chart-1)" },
+          { name: "Todo", value: 18, fill: "var(--chart-2)" },
+          { name: "In Progress", value: 12, fill: "var(--chart-3)" },
+          { name: "Review", value: 8, fill: "var(--chart-4)" },
+          { name: "Done", value: 45, fill: "var(--chart-5)" },
+        ]);
+      }
+    };
+    fetchTaskData();
+  }, []);
+
+  const workspaceGrowthData = [
+    { month: "Jan", workspaces: 12, members: 45 },
+    { month: "Feb", workspaces: 15, members: 52 },
+    { month: "Mar", workspaces: 18, members: 61 },
+    { month: "Apr", workspaces: 22, members: 78 },
+    { month: "May", workspaces: 28, members: 95 },
+    { month: "Jun", workspaces: 35, members: 124 },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2">

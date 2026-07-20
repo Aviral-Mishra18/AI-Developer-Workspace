@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ import {
   Check,
   Sparkles,
 } from "lucide-react";
-import { workspaces, notifications, currentUser } from "@/lib/mock-data";
+
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePathname, useRouter } from "next/navigation";
@@ -41,12 +41,50 @@ interface TopNavbarProps {
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [workspaces, setWorkspaces] = useState<any[]>([{ id: 'default', name: 'Personal Workspace' }]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0]);
-  const [unreadNotifications, setUnreadNotifications] = useState(
-    notifications.filter((n) => !n.read)
-  );
-  
+  const [unreadNotifications, setUnreadNotifications] = useState<any[]>([]);
+
   const { profile, user: authUser } = useAuth();
+  
+  useEffect(() => {
+    const fetchNavData = async () => {
+      if (!authUser) return;
+      try {
+        // Find workspaces user belongs to
+        const { data: wsMembers } = await supabase
+          .from('workspace_members')
+          .select('workspace_id')
+          .eq('user_id', authUser.id);
+          
+        if (wsMembers && wsMembers.length > 0) {
+          const wsIds = wsMembers.map((wm: any) => wm.workspace_id);
+          const { data: wsData } = await supabase
+            .from('workspaces')
+            .select('*')
+            .in('id', wsIds);
+            
+          if (wsData && wsData.length > 0) {
+            setWorkspaces(wsData);
+            setSelectedWorkspace(wsData[0]);
+          }
+        }
+        
+        const { data: notifData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('read', false)
+          .eq('user_id', authUser.id);
+          
+        if (notifData) {
+          setUnreadNotifications(notifData);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchNavData();
+  }, [authUser]);
   
   // Use profile data if available, fallback to basic user data, or mock user
   const user = profile ? {
@@ -54,13 +92,19 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
     email: profile.email || "user@example.com",
     avatar: profile.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
   } : {
-    name: authUser?.email?.split('@')[0] || currentUser.name,
-    email: authUser?.email || currentUser.email,
-    avatar: currentUser.avatar,
+    name: authUser?.email?.split('@')[0] || "User",
+    email: authUser?.email || "user@example.com",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
   };
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
     setUnreadNotifications([]);
+    if (authUser) {
+      await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', authUser.id);
+    }
   };
 
   const handleLogout = async () => {

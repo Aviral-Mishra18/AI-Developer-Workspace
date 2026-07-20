@@ -92,7 +92,11 @@ export default function CodeReviewUploadPage() {
 
       setUploadProgress(60);
 
-      const { codeReviewIssues: mockIssues } = await import("@/lib/mock-data");
+      const mockIssues = [
+        { severity: "critical", category: "security", title: "SQL Injection Vulnerability", description: "User input is directly concatenated into SQL query without parameterization.", file: filePathStr, line: 45, suggestion: "Use parameterized queries or an ORM like Prisma to prevent SQL injection." },
+        { severity: "warning", category: "performance", title: "N+1 Query Problem", description: "Database queries inside a loop cause excessive database calls.", file: filePathStr, line: 78, suggestion: "Use eager loading or batch queries to fetch related data in a single query." },
+        { severity: "info", category: "best-practices", title: "Missing Error Boundary", description: "React component tree lacks error boundaries for graceful error handling.", file: filePathStr, line: 1, suggestion: "Wrap main routes with an ErrorBoundary component." }
+      ];
       
       const issuesToInsert = mockIssues.map(issue => ({
         review_id: review.id,

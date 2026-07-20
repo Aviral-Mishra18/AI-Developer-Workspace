@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { projects as mockProjects } from "@/lib/mock-data";
 import { supabase } from "@/lib/supabase";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
@@ -31,7 +30,7 @@ export default function ProjectsPage() {
       try {
         const { data, error } = await supabase
           .from('projects')
-          .select('*')
+          .select('*, team:project_members(profiles(*))')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -39,16 +38,15 @@ export default function ProjectsPage() {
         const formattedData = (data || []).map(p => ({
           ...p,
           lastUpdated: p.created_at ? new Date(p.created_at).toLocaleDateString() : "Just now",
-          team: p.team || mockProjects[0].team, // Fallback team since table doesn't have it yet
+          team: (p.team as any[])?.map(member => member.profiles) || [], // Real team from project_members
         }));
         setProjects(formattedData);
       } catch (err: any) {
         console.error("Failed to fetch projects:", err.message || JSON.stringify(err) || err);
         if (process.env.NODE_ENV === "development") {
-          toast.error(`Supabase fetch failed, showing mock data: ${err.message || "unknown error"}`);
+          toast.error(`Supabase fetch failed: ${err.message || "unknown error"}`);
         }
-        // Fallback to mock data if the table doesn't exist or fetch fails
-        setProjects(mockProjects);
+        setProjects([]);
       } finally {
         setIsLoading(false);
       }

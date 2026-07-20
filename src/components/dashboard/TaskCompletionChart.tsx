@@ -2,9 +2,14 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { taskCompletionData } from "@/lib/mock-data";
 
-export function TaskCompletionChart() {
+export interface TaskCompletionData {
+  name: string;
+  value: number;
+  fill?: string;
+}
+
+export function TaskCompletionChart({ data }: { data: TaskCompletionData[] }) {
   return (
     <Card className="border border-border bg-card shadow-sm">
       <CardHeader>
@@ -14,8 +19,9 @@ export function TaskCompletionChart() {
       <CardContent className="h-[300px] pl-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} aspect={undefined}>
           <BarChart
-            data={taskCompletionData}
+            data={data}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+
           >
             <XAxis
               dataKey="name"

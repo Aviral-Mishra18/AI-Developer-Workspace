@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ChatConversation } from "@/lib/mock-data";
+export interface ChatConversation {
+  id: string;
+  title: string;
+  lastMessage: string;
+  time: string;
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";

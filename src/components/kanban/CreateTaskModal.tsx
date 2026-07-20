@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { users } from "@/lib/mock-data";
+
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/providers/AuthProvider";
 
@@ -72,7 +72,7 @@ export function CreateTaskModal({
         }
       } catch (err: any) {
         console.error("Failed to load form metadata:", err.message);
-        setDbUsers(users);
+        setDbUsers([]);
       }
     };
 
@@ -168,7 +168,7 @@ export function CreateTaskModal({
           {!projectIdProp && dbProjects.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="projectIdSelect">Project</Label>
-              <Select defaultValue={selectedProjId} onValueChange={(val) => { if (val) setSelectedProjId(val); }}>
+              <Select value={selectedProjId} onValueChange={(val) => { if (val) setSelectedProjId(val); }}>
                 <SelectTrigger className="border-border bg-card">
                   <SelectValue placeholder="Select project" />
                 </SelectTrigger>

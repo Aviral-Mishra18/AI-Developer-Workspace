@@ -3,11 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Download, Link2, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { docContent } from "@/lib/mock-data";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function DocViewer() {
+export function DocViewer({ content = "" }: { content?: string }) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyLink = () => {
@@ -19,7 +18,7 @@ export function DocViewer() {
 
   const handleExportMarkdown = () => {
     const element = document.createElement("a");
-    const file = new Blob([docContent], { type: 'text/markdown' });
+    const file = new Blob([content], { type: 'text/markdown' });
     element.href = URL.createObjectURL(file);
     element.download = "getting_started_guide.md";
     document.body.appendChild(element);
@@ -120,7 +119,7 @@ export function DocViewer() {
               },
             }}
           >
-            {docContent}
+            {content}
           </ReactMarkdown>
         </div>
       </div>

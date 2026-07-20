@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { currentUser, billingPlan, invoices } from "@/lib/mock-data";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,11 +37,11 @@ export default function SettingsPage() {
     bio: profile.bio || "No bio set.",
     timezone: profile.timezone || "America/New_York",
   } : {
-    name: authUser?.email?.split('@')[0] || currentUser.name,
-    email: authUser?.email || currentUser.email,
-    avatar: currentUser.avatar,
-    bio: currentUser.bio,
-    timezone: currentUser.timezone,
+    name: authUser?.email?.split('@')[0] || "User",
+    email: authUser?.email || "user@example.com",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback",
+    bio: "No bio set.",
+    timezone: "America/New_York",
   };
 
   useEffect(() => {
@@ -84,6 +84,24 @@ export default function SettingsPage() {
       toast.success("Password updated successfully!");
     }, 1000);
   };
+
+  const billingPlan = {
+    name: "Enterprise",
+    price: "$299/mo",
+    features: ["Unlimited workspaces", "Unlimited AI requests", "Priority support", "Custom integrations", "SSO/SAML", "Advanced analytics"],
+    usage: {
+      aiRequests: { used: 12847, limit: -1, label: "Unlimited" },
+      storage: { used: 78.4, limit: 500, label: "78.4 GB / 500 GB" },
+      members: { used: 48, limit: 100, label: "48 / 100 seats" },
+    },
+  };
+
+  const invoices = [
+    { id: "inv-001", date: "Mar 1, 2025", amount: "$299.00", status: "paid" as const },
+    { id: "inv-002", date: "Feb 1, 2025", amount: "$299.00", status: "paid" as const },
+    { id: "inv-003", date: "Jan 1, 2025", amount: "$299.00", status: "paid" as const },
+    { id: "inv-004", date: "Dec 1, 2024", amount: "$249.00", status: "paid" as const },
+  ];
 
   return (
     <div className="space-y-6">

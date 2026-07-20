@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { codeReviewIssues, CodeReviewIssue } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +9,17 @@ import { ShieldAlert, Cpu, CheckCircle2, ShieldCheck, ArrowLeft, Loader2 } from 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+
+export interface CodeReviewIssue {
+  id: string;
+  severity: "critical" | "warning" | "info" | "suggestion";
+  category: "security" | "performance" | "best-practices" | "code-smells" | "ai-suggestions";
+  title: string;
+  description: string;
+  file: string;
+  line: number;
+  suggestion: string;
+}
 
 function CodeReviewResultsContent() {
   const searchParams = useSearchParams();
@@ -20,7 +30,7 @@ function CodeReviewResultsContent() {
   useEffect(() => {
     const fetchIssues = async () => {
       if (!reviewId) {
-        setIssues(codeReviewIssues);
+        setIssues([]);
         setIsLoading(false);
         return;
       }
@@ -47,7 +57,7 @@ function CodeReviewResultsContent() {
         setIssues(mappedIssues);
       } catch (err: any) {
         console.error("Failed to load review results:", err.message);
-        setIssues(codeReviewIssues);
+        setIssues([]);
       } finally {
         setIsLoading(false);
       }
