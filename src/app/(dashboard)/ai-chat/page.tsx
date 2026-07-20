@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useChat, type Message } from "ai/react";
 import { ChatSidebar } from "@/components/ai-chat/ChatSidebar";
 import { ChatMessage } from "@/components/ai-chat/ChatMessage";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
@@ -10,44 +11,11 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";
 
-export type MessageType = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  timestamp: string;
-};
-
 export default function AIChatPage() {
   const { profile } = useAuth();
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  const handleSelectChat = useCallback(async (id: string) => {
-    setActiveChatId(id);
-    try {
-      const { data, error } = await supabase
-        .from('ai_chat_messages')
-        .select('*')
-        .eq('conversation_id', id)
-        .order('created_at', { ascending: true });
-        
-      if (error) throw error;
-      
-      setMessages((data || []).map((m: any) => ({
-        id: m.id,
-        role: m.role as "user" | "assistant" | "system",
-        content: m.content,
-        timestamp: new Date(m.created_at).toLocaleTimeString(),
-      })));
-    } catch (err: any) {
-      console.error(err);
-      toast.error("Failed to load messages");
-      setMessages([]);
-    }
-  }, []);
 
   const fetchConversations = useCallback(async () => {
     if (!profile?.id) return;
@@ -64,23 +32,74 @@ export default function AIChatPage() {
         id: c.id,
         title: c.title,
         lastMessage: "...",
-        time: new Date(c.updated_at).toLocaleTimeString(),
+        time: new Date(c.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         messageCount: 0,
       }));
       
       setConversations(mapped);
-      if (mapped.length > 0 && !activeChatId) {
-        handleSelectChat(mapped[0].id);
-      }
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to load conversations");
     }
-  }, [profile, activeChatId]);
+  }, [profile]);
+
+  const { messages, setMessages, append, isLoading } = useChat({
+    id: activeChatId || "default",
+    api: "/api/chat",
+    onFinish: async (message: Message) => {
+      if (activeChatId) {
+        try {
+          await supabase
+            .from('ai_chat_messages')
+            .insert({
+              conversation_id: activeChatId,
+              role: 'assistant',
+              content: message.content
+            });
+          fetchConversations();
+        } catch (err) {
+          console.error("Failed to save assistant message", err);
+        }
+      }
+    }
+  });
+
+  const handleSelectChat = useCallback(async (id: string) => {
+    setActiveChatId(id);
+    try {
+      const { data, error } = await supabase
+        .from('ai_chat_messages')
+        .select('*')
+        .eq('conversation_id', id)
+        .order('created_at', { ascending: true });
+        
+      if (error) throw error;
+      
+      setMessages((data || []).map((m: any) => ({
+        id: m.id,
+        role: m.role as "user" | "assistant" | "system",
+        content: m.content,
+        createdAt: new Date(m.created_at),
+      })));
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to load messages");
+      setMessages([]);
+    }
+  }, [setMessages]);
+
+  // Initial load auto-select
+  useEffect(() => {
+    fetchConversations().then(() => {
+      // Do nothing extra here
+    });
+  }, [fetchConversations]);
 
   useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+    if (conversations.length > 0 && !activeChatId) {
+      handleSelectChat(conversations[0].id);
+    }
+  }, [conversations, activeChatId, handleSelectChat]);
 
   // Auto scroll to bottom when messages list changes
   useEffect(() => {
@@ -90,15 +109,11 @@ export default function AIChatPage() {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
-  }, [messages, isTyping]);
-
-
+  }, [messages, isLoading]);
 
   const handleNewChat = async () => {
     if (!profile?.id) return;
     try {
-      // Create new chat in Supabase
-      // Assuming a workspace exists, but we'll try to get first workspace or leave it null if schema allows
       const { data: workspaces } = await supabase.from('workspaces').select('id').limit(1);
       const workspaceId = workspaces?.[0]?.id;
 
@@ -121,12 +136,14 @@ export default function AIChatPage() {
       
       await fetchConversations();
       setActiveChatId(data.id);
+      
+      // Initialize with a welcome message locally
       setMessages([
         {
-          id: "m-welcome",
+          id: `m-welcome-${Date.now()}`,
           role: "assistant",
           content: "Hello! I am your AI coding assistant. Ask me anything about Next.js, React, Node.js, databases, or cloud infrastructure.",
-          timestamp: "Just now",
+          createdAt: new Date(),
         },
       ]);
     } catch (err: any) {
@@ -139,20 +156,15 @@ export default function AIChatPage() {
     if (!activeChatId) return;
 
     const userMsgContent = text + (file ? `\n\n*(Attached file: ${file.name})*` : "");
-    
-    // Optimistic UI update
-    const userMsg: MessageType = {
-      id: `m-temp-${Date.now()}`,
-      role: "user",
-      content: userMsgContent,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
 
-    setMessages((prev) => [...prev, userMsg]);
-    setIsTyping(true);
+    // Add message to chat UI & stream response
+    append({
+      role: 'user',
+      content: userMsgContent,
+    });
 
     try {
-      // Save user message
+      // Save user message to database
       await supabase
         .from('ai_chat_messages')
         .insert({
@@ -168,41 +180,9 @@ export default function AIChatPage() {
         .eq('id', activeChatId);
 
       fetchConversations();
-
-      // Simulate AI response stream since we don't have an AI backend running here
-      setTimeout(async () => {
-        setIsTyping(false);
-        const assistantMsgContent = `I received your prompt: **"${text.slice(0, 50)}..."**
-
-Here is a quick breakdown to help you proceed:
-1. **Best Practice**: Ensure your environment variables are configured correctly.
-2. **Implementation**: Use hooks like \`useMemo\` if you are processing complex lists.
-3. **Safety**: Validate all user-supplied endpoints using schemas like **Zod**.
-
-Let me know if you would like me to generate a fully styled component code template for this implementation!`;
-
-        // Save assistant message
-        const { data: savedMsg } = await supabase
-          .from('ai_chat_messages')
-          .insert({
-            conversation_id: activeChatId,
-            role: 'assistant',
-            content: assistantMsgContent
-          })
-          .select()
-          .single();
-
-        setMessages((prev) => [...prev, {
-          id: savedMsg?.id || `m-temp-${Date.now()}`,
-          role: "assistant",
-          content: assistantMsgContent,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        }]);
-      }, 2500);
     } catch (err: any) {
       console.error(err);
-      toast.error("Failed to send message");
-      setIsTyping(false);
+      toast.error("Failed to save user message");
     }
   };
 
@@ -235,23 +215,25 @@ Let me know if you would like me to generate a fully styled component code templ
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-20">No messages yet. Select a conversation or start a new one.</div>
               ) : (
-                messages.map((msg) => (
+                messages.map((msg: Message) => (
                   <ChatMessage
                     key={msg.id}
                     role={msg.role as any}
                     content={msg.content}
-                    timestamp={msg.timestamp}
+                    timestamp={msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   />
                 ))
               )}
-              {isTyping && <TypingIndicator />}
+              {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+                <TypingIndicator />
+              )}
             </div>
           </ScrollArea>
 
           {/* Fixed Input Dock */}
           <div className="p-4 border-t border-border bg-card/65 backdrop-blur-md shrink-0">
             <div className="max-w-3xl mx-auto">
-              <ChatInput onSend={handleSend} disabled={isTyping || !activeChatId} />
+              <ChatInput onSend={handleSend} disabled={isLoading || !activeChatId} />
             </div>
           </div>
         </div>
@@ -259,4 +241,3 @@ Let me know if you would like me to generate a fully styled component code templ
     </div>
   );
 }
-
