@@ -46,6 +46,9 @@ export default function AIChatPage() {
   const { messages, setMessages, append, isLoading } = useChat({
     id: activeChatId || "default",
     api: "/api/chat",
+    onError: (error) => {
+      toast.error(`AI Chat Error: ${error.message}`);
+    },
     onFinish: async (message: Message) => {
       if (activeChatId) {
         try {
