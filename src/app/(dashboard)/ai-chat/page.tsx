@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useChat, type Message } from "ai/react";
+import { useChat, type UIMessage } from "@ai-sdk/react";
 import { ChatSidebar } from "@/components/ai-chat/ChatSidebar";
 import { ChatMessage } from "@/components/ai-chat/ChatMessage";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { TypingIndicator } from "@/components/ai-chat/TypingIndicator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// Removed ScrollArea import to use native scroll instead
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -27,7 +27,7 @@ export default function AIChatPage() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      
+
       const mapped = (data || []).map((c: any) => ({
         id: c.id,
         title: c.title,
@@ -35,7 +35,7 @@ export default function AIChatPage() {
         time: new Date(c.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         messageCount: 0,
       }));
-      
+
       setConversations(mapped);
     } catch (err: any) {
       console.error(err);
@@ -43,13 +43,13 @@ export default function AIChatPage() {
     }
   }, [profile]);
 
-  const { messages, setMessages, append, isLoading } = useChat({
+  const { messages, setMessages, sendMessage, status } = useChat({
     id: activeChatId || "default",
-    api: "/api/chat",
     onError: (error) => {
       toast.error(`AI Chat Error: ${error.message}`);
     },
-    onFinish: async (message: Message) => {
+    onFinish: async (event: { message: UIMessage }) => {
+      const message = event.message;
       if (activeChatId) {
         try {
           await supabase
@@ -57,7 +57,7 @@ export default function AIChatPage() {
             .insert({
               conversation_id: activeChatId,
               role: 'assistant',
-              content: message.content
+              content: message.parts?.filter(p => p.type === 'text').map(p => (p as any).text).join('') || ''
             });
           fetchConversations();
         } catch (err) {
@@ -75,15 +75,15 @@ export default function AIChatPage() {
         .select('*')
         .eq('conversation_id', id)
         .order('created_at', { ascending: true });
-        
+
       if (error) throw error;
-      
+
       setMessages((data || []).map((m: any) => ({
         id: m.id,
         role: m.role as "user" | "assistant" | "system",
-        content: m.content,
+        parts: [{ type: 'text', text: m.content }],
         createdAt: new Date(m.created_at),
-      })));
+      } as any)));
     } catch (err: any) {
       console.error(err);
       toast.error("Failed to load messages");
@@ -107,12 +107,10 @@ export default function AIChatPage() {
   // Auto scroll to bottom when messages list changes
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
+      const scrollContainer = scrollAreaRef.current;
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, status]);
 
   const handleNewChat = async () => {
     if (!profile?.id) return;
@@ -121,33 +119,33 @@ export default function AIChatPage() {
       const workspaceId = workspaces?.[0]?.id;
 
       if (!workspaceId) {
-         toast.error("You need a workspace to start a chat.");
-         return;
+        toast.error("You need a workspace to start a chat.");
+        return;
       }
 
       const { data, error } = await supabase
         .from('ai_chats')
         .insert({
-           title: "New Conversation",
-           workspace_id: workspaceId,
-           created_by: profile.id
+          title: "New Conversation",
+          workspace_id: workspaceId,
+          created_by: profile.id
         })
         .select()
         .single();
-        
+
       if (error) throw error;
-      
+
       await fetchConversations();
       setActiveChatId(data.id);
-      
+
       // Initialize with a welcome message locally
       setMessages([
         {
           id: `m-welcome-${Date.now()}`,
           role: "assistant",
-          content: "Hello! I am your AI coding assistant. Ask me anything about Next.js, React, Node.js, databases, or cloud infrastructure.",
+          parts: [{ type: 'text', text: "Hello! I am your AI coding assistant. Ask me anything about Next.js, React, Node.js, databases, or cloud infrastructure." }],
           createdAt: new Date(),
-        },
+        } as any,
       ]);
     } catch (err: any) {
       console.error(err);
@@ -161,9 +159,9 @@ export default function AIChatPage() {
     const userMsgContent = text + (file ? `\n\n*(Attached file: ${file.name})*` : "");
 
     // Add message to chat UI & stream response
-    append({
+    sendMessage({
       role: 'user',
-      content: userMsgContent,
+      parts: [{ type: 'text', text: userMsgContent }],
     });
 
     try {
@@ -213,30 +211,33 @@ export default function AIChatPage() {
         {/* Chat Workspace */}
         <div className="flex-1 flex flex-col h-full bg-background/30">
           {/* Scroll messages window */}
-          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+          <div ref={scrollAreaRef} className="flex-1 p-4 overflow-y-auto">
             <div className="space-y-4 max-w-3xl mx-auto py-2">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-20">No messages yet. Select a conversation or start a new one.</div>
               ) : (
-                messages.map((msg: Message) => (
-                  <ChatMessage
-                    key={msg.id}
-                    role={msg.role as any}
-                    content={msg.content}
-                    timestamp={msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  />
-                ))
+                messages.map((msg: UIMessage) => {
+                  const createdAt = (msg as any).createdAt;
+                  return (
+                    <ChatMessage
+                      key={msg.id}
+                      role={msg.role as any}
+                      content={msg.parts?.filter(p => p.type === 'text').map((p: any) => p.text).join('') || (msg as any).content || ''}
+                      timestamp={createdAt ? new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    />
+                  );
+                })
               )}
-              {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+              {['submitted', 'streaming'].includes(status) && messages[messages.length - 1]?.role !== 'assistant' && (
                 <TypingIndicator />
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Fixed Input Dock */}
           <div className="p-4 border-t border-border bg-card/65 backdrop-blur-md shrink-0">
             <div className="max-w-3xl mx-auto">
-              <ChatInput onSend={handleSend} disabled={isLoading || !activeChatId} />
+              <ChatInput onSend={handleSend} disabled={['submitted', 'streaming'].includes(status) || !activeChatId} />
             </div>
           </div>
         </div>

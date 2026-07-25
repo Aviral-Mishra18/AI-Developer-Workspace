@@ -110,8 +110,22 @@ export default function LoginPage() {
     }
   };
 
-  const handleSocialLogin = (platform: string) => {
-    toast.info(`Connecting with ${platform}...`);
+  const handleSocialLogin = async (platform: string) => {
+    try {
+      if (platform === "GitHub") {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'github',
+          options: {
+            redirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+        if (error) throw error;
+      } else {
+        toast.info(`Connecting with ${platform}...`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || `Failed to login with ${platform}`);
+    }
   };
 
   return (
