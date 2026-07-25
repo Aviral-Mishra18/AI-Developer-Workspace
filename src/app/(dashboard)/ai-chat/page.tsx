@@ -6,7 +6,7 @@ import { ChatSidebar } from "@/components/ai-chat/ChatSidebar";
 import { ChatMessage } from "@/components/ai-chat/ChatMessage";
 import { ChatInput } from "@/components/ai-chat/ChatInput";
 import { TypingIndicator } from "@/components/ai-chat/TypingIndicator";
-// Removed ScrollArea import to use native scroll instead
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -107,8 +107,10 @@ export default function AIChatPage() {
   // Auto scroll to bottom when messages list changes
   useEffect(() => {
     if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current;
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-slot="scroll-area-viewport"]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [messages, status]);
 
@@ -211,7 +213,7 @@ export default function AIChatPage() {
         {/* Chat Workspace */}
         <div className="flex-1 flex flex-col h-full bg-background/30">
           {/* Scroll messages window */}
-          <div ref={scrollAreaRef} className="flex-1 p-4 overflow-y-auto">
+          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
             <div className="space-y-4 max-w-3xl mx-auto py-2">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-20">No messages yet. Select a conversation or start a new one.</div>
@@ -232,7 +234,7 @@ export default function AIChatPage() {
                 <TypingIndicator />
               )}
             </div>
-          </div>
+          </ScrollArea>
 
           {/* Fixed Input Dock */}
           <div className="p-4 border-t border-border bg-card/65 backdrop-blur-md shrink-0">
