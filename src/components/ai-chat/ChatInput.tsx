@@ -65,17 +65,17 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       )}
 
       {/* Input Form container */}
-      <div className="relative border border-border bg-card rounded-xl shadow-sm focus-within:ring-1 focus-within:ring-primary/20">
+      <div className="relative border border-border bg-card/60 backdrop-blur-xl rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50">
         <Textarea
           placeholder="Ask AI anything, attach code files..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          className="w-full min-h-[48px] max-h-[160px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none py-3 pl-3 pr-16 text-sm"
+          className="w-full min-h-[48px] max-h-[160px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent resize-none py-3 pl-4 pr-20 text-sm leading-relaxed"
         />
 
-        <div className="absolute right-2.5 bottom-2.5 flex items-center gap-1.5">
+        <div className="absolute right-2 bottom-2 flex items-center gap-1">
           <input
             type="file"
             ref={fileInputRef}
@@ -87,7 +87,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             size="icon"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="h-7 w-7 rounded-md text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
           >
             <Paperclip className="h-4 w-4" />
           </Button>
@@ -95,9 +95,9 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             size="icon"
             onClick={handleSend}
             disabled={disabled || (!input.trim() && !selectedFile)}
-            className="h-7 w-7 rounded-md shadow-sm"
+            className="h-8 w-8 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all bg-primary text-primary-foreground disabled:opacity-50 disabled:hover:scale-100"
           >
-            <Send className="h-3.5 w-3.5" />
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>

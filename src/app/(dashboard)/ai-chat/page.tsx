@@ -193,10 +193,13 @@ export default function AIChatPage() {
   };
 
   return (
-    <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
+    <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
+      {/* Decorative background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none opacity-50 dark:opacity-30" />
+
       {/* Page Title */}
-      <div className="shrink-0">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+      <div className="shrink-0 relative z-10">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-primary via-primary/80 to-indigo-400 bg-clip-text text-transparent drop-shadow-sm">
           AI Assistant Chat
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -205,9 +208,9 @@ export default function AIChatPage() {
       </div>
 
       {/* Main chat UI */}
-      <div className="flex-1 flex flex-col md:flex-row border border-border rounded-xl bg-card overflow-hidden shadow-sm min-h-0 relative">
+      <div className="flex-1 flex flex-col md:flex-row border border-border/60 rounded-2xl bg-card/60 backdrop-blur-xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] min-h-0 relative z-10">
         {/* Desktop Sidebar */}
-        <div className="hidden md:block w-[280px] shrink-0 border-r border-border">
+        <div className="hidden md:block w-[280px] shrink-0 border-r border-border/60 bg-background/30">
           <ChatSidebar
             conversations={conversations}
             activeId={activeChatId || ""}

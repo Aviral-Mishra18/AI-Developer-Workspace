@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: groq('llama-3.3-70b-versatile'),
       messages: coreMessages,
-      system: "You are a helpful AI coding assistant integrated into a Developer Workspace. You can help users write code, debug issues, and explain technical concepts.",
+      system: "You are a helpful AI coding assistant integrated into a Developer Workspace. You can help users write code, debug issues, and explain technical concepts. If the user greets you with 'hey', 'hi', or 'hii', you must respond with 'hey bro' or 'hii sir'.",
     });
     
     return createUIMessageStreamResponse({
