@@ -193,12 +193,12 @@ export default function AIChatPage() {
   };
 
   return (
-    <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
+    <div className="space-y-4 md:space-y-6 h-[calc(100dvh-100px)] md:h-[calc(100vh-140px)] flex flex-col relative pb-4 md:pb-0">
       {/* Decorative background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/20 blur-[120px] rounded-full pointer-events-none opacity-50 dark:opacity-30" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[400px] bg-primary/20 blur-[80px] md:blur-[120px] rounded-full pointer-events-none opacity-50 dark:opacity-30" />
 
       {/* Page Title */}
-      <div className="shrink-0 relative z-10">
+      <div className="shrink-0 relative z-10 hidden md:block">
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-primary via-primary/80 to-indigo-400 bg-clip-text text-transparent drop-shadow-sm">
           AI Assistant Chat
         </h1>
@@ -208,7 +208,7 @@ export default function AIChatPage() {
       </div>
 
       {/* Main chat UI */}
-      <div className="flex-1 flex flex-col md:flex-row border border-border/60 rounded-2xl bg-card/60 backdrop-blur-xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] min-h-0 relative z-10">
+      <div className="flex-1 flex flex-col md:flex-row border-0 md:border md:border-border/60 md:rounded-2xl bg-card/60 md:backdrop-blur-xl overflow-hidden shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] min-h-0 relative z-10 -mx-4 md:mx-0">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-[280px] shrink-0 border-r border-border/60 bg-background/30">
           <ChatSidebar
@@ -220,23 +220,26 @@ export default function AIChatPage() {
         </div>
 
         {/* Mobile Sidebar Trigger (Header overlay) */}
-        <div className="md:hidden flex items-center justify-between p-3 border-b border-border bg-card">
-          <span className="font-semibold text-sm">Conversations</span>
+        <div className="md:hidden flex items-center justify-between p-3 border-b border-border/60 bg-card/80 backdrop-blur-xl sticky top-0 z-20">
+          <div className="flex flex-col">
+            <span className="font-bold text-sm bg-gradient-to-br from-primary to-indigo-400 bg-clip-text text-transparent">AI Assistant Chat</span>
+            <span className="text-[10px] text-muted-foreground">{conversations.find(c => c.id === activeChatId)?.title || "Conversations"}</span>
+          </div>
           <Sheet>
             <SheetTrigger
-              render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+              render={<Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10" />}
             >
               <Menu className="h-4 w-4" />
               <span className="sr-only">Toggle Sidebar</span>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] p-0">
+            <SheetContent side="left" className="w-[85vw] max-w-[320px] p-0 border-r-0">
               <ChatSidebar
                 conversations={conversations}
                 activeId={activeChatId || ""}
                 onSelect={(id) => {
                   handleSelectChat(id);
-                  // Auto-close could be implemented here if we tracked sheet open state,
-                  // but shadcn sheet allows user to click away or press esc.
+                  // We can't auto-close the sheet here directly because Shadcn Sheet uses uncontrolled state for this example,
+                  // but user can click overlay to close.
                 }}
                 onNewChat={handleNewChat}
               />
