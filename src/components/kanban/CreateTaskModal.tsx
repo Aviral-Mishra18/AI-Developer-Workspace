@@ -156,7 +156,7 @@ export function CreateTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[450px] border-border bg-card">
+      <DialogContent className="w-[95vw] max-w-[450px] max-h-[90vh] overflow-y-auto border-border bg-card">
         <DialogHeader>
           <DialogTitle>Create Task</DialogTitle>
           <DialogDescription>
@@ -209,7 +209,7 @@ export function CreateTaskModal({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
               <Select
@@ -248,7 +248,7 @@ export function CreateTaskModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assigneeId">Assignee</Label>
               <Select onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>

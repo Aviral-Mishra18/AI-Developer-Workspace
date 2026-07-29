@@ -10,6 +10,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 export default function AIChatPage() {
   const { profile } = useAuth();
@@ -202,13 +205,41 @@ export default function AIChatPage() {
       </div>
 
       {/* Main chat UI */}
-      <div className="flex-1 flex flex-col md:flex-row border border-border rounded-xl bg-card overflow-hidden shadow-sm min-h-0">
-        <ChatSidebar
-          conversations={conversations}
-          activeId={activeChatId || ""}
-          onSelect={handleSelectChat}
-          onNewChat={handleNewChat}
-        />
+      <div className="flex-1 flex flex-col md:flex-row border border-border rounded-xl bg-card overflow-hidden shadow-sm min-h-0 relative">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block w-[280px] shrink-0 border-r border-border">
+          <ChatSidebar
+            conversations={conversations}
+            activeId={activeChatId || ""}
+            onSelect={handleSelectChat}
+            onNewChat={handleNewChat}
+          />
+        </div>
+
+        {/* Mobile Sidebar Trigger (Header overlay) */}
+        <div className="md:hidden flex items-center justify-between p-3 border-b border-border bg-card">
+          <span className="font-semibold text-sm">Conversations</span>
+          <Sheet>
+            <SheetTrigger
+              render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+            >
+              <Menu className="h-4 w-4" />
+              <span className="sr-only">Toggle Sidebar</span>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] p-0">
+              <ChatSidebar
+                conversations={conversations}
+                activeId={activeChatId || ""}
+                onSelect={(id) => {
+                  handleSelectChat(id);
+                  // Auto-close could be implemented here if we tracked sheet open state,
+                  // but shadcn sheet allows user to click away or press esc.
+                }}
+                onNewChat={handleNewChat}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
 
         {/* Chat Workspace */}
         <div className="flex-1 flex flex-col h-full bg-background/30">

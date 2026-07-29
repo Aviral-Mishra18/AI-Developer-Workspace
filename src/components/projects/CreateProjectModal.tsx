@@ -102,7 +102,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] border-border bg-card">
+      <DialogContent className="w-[95vw] max-w-[425px] max-h-[90vh] overflow-y-auto border-border bg-card">
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>
           <DialogDescription>
@@ -137,7 +137,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="status">Initial Status</Label>
               <Select

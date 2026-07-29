@@ -32,7 +32,7 @@ export function ChatSidebar({
   );
 
   return (
-    <div className="w-full md:w-[280px] border-r border-border bg-card flex flex-col h-full shrink-0">
+    <div className="w-full h-full flex flex-col shrink-0 border-r border-border bg-card">
       {/* Sidebar Header */}
       <div className="p-4 border-b border-border space-y-3 shrink-0">
         <Button onClick={onNewChat} className="w-full flex items-center justify-center gap-1.5 shadow-sm">

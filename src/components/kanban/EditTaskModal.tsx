@@ -154,7 +154,7 @@ export function EditTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[450px] border-border bg-card">
+      <DialogContent className="w-[95vw] max-w-[450px] max-h-[90vh] overflow-y-auto border-border bg-card">
         <DialogHeader className="flex flex-row items-center justify-between">
           <div>
             <DialogTitle>Edit Task</DialogTitle>
@@ -201,7 +201,7 @@ export function EditTaskModal({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-priority">Priority</Label>
               <Select
@@ -240,7 +240,7 @@ export function EditTaskModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-assigneeId">Assignee</Label>
               <Select

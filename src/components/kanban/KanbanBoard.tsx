@@ -146,14 +146,14 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   return (
     <div className="space-y-4">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
+        <div className="flex overflow-x-auto pb-4 space-x-4 snap-x snap-mandatory md:grid md:grid-cols-5 md:space-x-0 md:snap-none md:gap-4 scrollbar-thin">
           {COLUMNS.map((column) => {
             const columnTasks = tasks.filter((t) => t.status === column.id);
 
             return (
               <div
                 key={column.id}
-                className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-border rounded-xl p-3 min-w-[250px] max-h-[750px] overflow-hidden"
+                className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-border rounded-xl p-3 min-w-[280px] md:min-w-0 max-h-[750px] overflow-hidden snap-center"
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between pb-3 shrink-0">
