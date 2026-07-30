@@ -20,6 +20,7 @@ import { Loader2, Sparkles, Eye, EyeOff, CheckCircle2, ChevronLeft } from "lucid
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/lib/supabase";
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
@@ -61,12 +62,20 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordFormValues) => {
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: data.password,
+      });
+
+      if (error) throw error;
+
       setIsSuccess(true);
       toast.success("Password successfully reset!");
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reset password");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

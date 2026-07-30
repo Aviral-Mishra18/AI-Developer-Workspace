@@ -12,7 +12,7 @@ export function DashboardShell({
   const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
       {/* Sidebar Navigation */}
       <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 

@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Sparkles, Mail, ChevronLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
@@ -40,12 +41,20 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotPasswordFormValues) => {
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
+      if (error) throw error;
+      
       setIsSuccess(true);
       toast.success("Reset link sent successfully!");
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset link");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
