@@ -183,7 +183,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               }
             >
               <Building className="h-4 w-4 text-muted-foreground" />
-              <span className="max-w-[120px] truncate font-medium">
+              <span className="max-w-[80px] sm:max-w-[120px] truncate font-medium">
                 {selectedWorkspace.name}
               </span>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />

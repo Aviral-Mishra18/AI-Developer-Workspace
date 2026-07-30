@@ -33,7 +33,7 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
           : "bg-gradient-to-br from-background to-muted/50 border border-border/50 shadow-sm"
       )}
     >
-      <Avatar className={cn("h-8 w-8 ring-2 ring-offset-2 ring-offset-background transition-all shadow-sm", role === "assistant" ? "ring-primary/30 bg-primary/10" : "ring-border/50")}>
+      <Avatar className={cn("h-8 w-8 shrink-0 ring-2 ring-offset-2 ring-offset-background transition-all shadow-sm", role === "assistant" ? "ring-primary/30 bg-primary/10" : "ring-border/50")}>
         {role === "assistant" ? (
           <AvatarFallback className="bg-primary text-primary-foreground animate-pulse">
             <Sparkles className="h-4 w-4" />

@@ -85,6 +85,7 @@ export function CreateTaskModal({
     register,
     handleSubmit,
     setValue,
+    watch,
     reset,
     formState: { errors },
   } = useForm<CreateTaskValues>({
@@ -213,7 +214,7 @@ export function CreateTaskModal({
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
               <Select
-                defaultValue="medium"
+                value={watch("priority")}
                 onValueChange={(val: any) => setValue("priority", val)}
               >
                 <SelectTrigger className="border-border bg-card">
@@ -231,7 +232,7 @@ export function CreateTaskModal({
             <div className="space-y-2">
               <Label htmlFor="status">Column</Label>
               <Select
-                defaultValue={defaultStatus}
+                value={watch("status")}
                 onValueChange={(val: any) => setValue("status", val)}
               >
                 <SelectTrigger className="border-border bg-card">
@@ -251,7 +252,7 @@ export function CreateTaskModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assigneeId">Assignee</Label>
-              <Select onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>
+              <Select value={watch("assigneeId") || undefined} onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>
                 <SelectTrigger className="border-border bg-card">
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>

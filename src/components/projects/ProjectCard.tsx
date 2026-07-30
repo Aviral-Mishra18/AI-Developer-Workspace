@@ -46,7 +46,7 @@ export function ProjectCard({
     <Card className="border border-border bg-card shadow-sm hover:shadow-md transition-all flex flex-col h-full group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
+          <CardTitle className="text-base font-semibold truncate flex-1 min-w-0 group-hover:text-primary transition-colors">
             <Link href={`/projects/${id}`}>{name}</Link>
           </CardTitle>
           <Badge className={cn("capitalize shrink-0 border-0", getStatusColor(status))} variant="outline">

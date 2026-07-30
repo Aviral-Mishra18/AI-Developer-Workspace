@@ -45,6 +45,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
     register,
     handleSubmit,
     setValue,
+    watch,
     reset,
     formState: { errors },
   } = useForm<CreateProjectValues>({
@@ -141,7 +142,7 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
             <div className="space-y-2">
               <Label htmlFor="status">Initial Status</Label>
               <Select
-                defaultValue="planning"
+                value={watch("status")}
                 onValueChange={(val: any) => setValue("status", val)}
               >
                 <SelectTrigger className="border-border bg-card">

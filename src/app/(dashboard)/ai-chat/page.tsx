@@ -193,22 +193,12 @@ export default function AIChatPage() {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 h-[calc(100dvh-100px)] md:h-[calc(100vh-140px)] flex flex-col relative pb-4 md:pb-0">
+    <div className="flex flex-col h-[calc(100dvh-64px)] -m-4 md:-m-8 bg-background relative overflow-hidden">
       {/* Decorative background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[400px] bg-primary/20 blur-[80px] md:blur-[120px] rounded-full pointer-events-none opacity-50 dark:opacity-30" />
 
-      {/* Page Title */}
-      <div className="shrink-0 relative z-10 hidden md:block">
-        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-primary via-primary/80 to-indigo-400 bg-clip-text text-transparent drop-shadow-sm">
-          AI Assistant Chat
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Chat with Vionex assistant, generate codebase documentation, or debug components.
-        </p>
-      </div>
-
       {/* Main chat UI */}
-      <div className="flex-1 flex flex-col md:flex-row border-0 md:border md:border-border/60 md:rounded-2xl bg-card/60 md:backdrop-blur-xl overflow-hidden shadow-none md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] min-h-0 relative z-10 -mx-4 md:mx-0">
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 relative z-10 w-full">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-[280px] shrink-0 border-r border-border/60 bg-background/30">
           <ChatSidebar
@@ -221,9 +211,9 @@ export default function AIChatPage() {
 
         {/* Mobile Sidebar Trigger (Header overlay) */}
         <div className="md:hidden flex items-center justify-between p-3 border-b border-border/60 bg-card/80 backdrop-blur-xl sticky top-0 z-20">
-          <div className="flex flex-col">
-            <span className="font-bold text-sm bg-gradient-to-br from-primary to-indigo-400 bg-clip-text text-transparent">AI Assistant Chat</span>
-            <span className="text-[10px] text-muted-foreground">{conversations.find(c => c.id === activeChatId)?.title || "Conversations"}</span>
+          <div className="flex flex-col flex-1 min-w-0 pr-2">
+            <span className="font-bold text-sm bg-gradient-to-br from-primary to-indigo-400 bg-clip-text text-transparent truncate">AI Assistant Chat</span>
+            <span className="text-[10px] text-muted-foreground truncate">{conversations.find(c => c.id === activeChatId)?.title || "Conversations"}</span>
           </div>
           <Sheet>
             <SheetTrigger
@@ -248,10 +238,10 @@ export default function AIChatPage() {
         </div>
 
         {/* Chat Workspace */}
-        <div className="flex-1 flex flex-col h-full bg-background/30">
+        <div className="flex-1 flex flex-col min-w-0 bg-background/30 h-full">
           {/* Scroll messages window */}
-          <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 overflow-hidden p-4">
-            <div className="space-y-4 max-w-3xl mx-auto py-2">
+          <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 w-full">
+            <div className="flex flex-col space-y-4 w-full max-w-3xl mx-auto p-4 md:p-6 pb-6">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground mt-20">No messages yet. Select a conversation or start a new one.</div>
               ) : (

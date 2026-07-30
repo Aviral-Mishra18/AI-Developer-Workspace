@@ -29,7 +29,7 @@ export function WorkspaceCard({
     <Card className="border border-border bg-card shadow-sm hover:shadow-md transition-all flex flex-col h-full group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg font-semibold tracking-tight truncate group-hover:text-primary transition-colors">
+          <CardTitle className="text-lg font-semibold tracking-tight truncate flex-1 min-w-0 group-hover:text-primary transition-colors">
             <Link href={`/workspaces/${id}`}>{name}</Link>
           </CardTitle>
           <Badge
@@ -49,18 +49,18 @@ export function WorkspaceCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-4 flex-1">
-        <div className="grid grid-cols-3 gap-2 text-xs py-3 border-y border-border/50 text-muted-foreground">
-          <div className="flex flex-col items-center gap-1 justify-center">
+        <div className="flex justify-between text-xs py-3 border-y border-border/50 text-muted-foreground">
+          <div className="flex flex-col items-center flex-1 gap-1 justify-center">
             <Users className="h-4 w-4 text-foreground/70" />
             <span className="font-semibold text-foreground">{memberCount}</span>
             <span>Members</span>
           </div>
-          <div className="flex flex-col items-center gap-1 justify-center border-x border-border/50">
+          <div className="flex flex-col items-center flex-1 gap-1 justify-center border-x border-border/50">
             <FolderGit className="h-4 w-4 text-foreground/70" />
             <span className="font-semibold text-foreground">{projectCount}</span>
             <span>Projects</span>
           </div>
-          <div className="flex flex-col items-center gap-1 justify-center">
+          <div className="flex flex-col items-center flex-1 gap-1 justify-center">
             <Database className="h-4 w-4 text-foreground/70" />
             <span className="font-semibold text-foreground">{storage}</span>
             <span>Storage</span>
