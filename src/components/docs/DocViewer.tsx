@@ -3,11 +3,75 @@
 import { Button } from "@/components/ui/button";
 import { Download, Link2, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+
+const generateSlug = (children: any): string => {
+  const extractText = (node: any): string => {
+    if (typeof node === "string") return node;
+    if (Array.isArray(node)) return node.map(extractText).join("");
+    if (node && node.props && node.props.children) return extractText(node.props.children);
+    return "";
+  };
+  const text = extractText(children);
+  return text.toLowerCase().replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "");
+};
+
+const TocNode = ({ item }: { item: any }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (!item.children || item.children.length === 0) {
+    return (
+      <a
+        href={`#${item.id}`}
+        onClick={(e) => {
+          e.preventDefault();
+          document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+        }}
+        className={cn(
+          "text-muted-foreground hover:text-primary transition-colors font-medium block py-1",
+          item.level === 3 ? "pl-4 text-[11px]" : ""
+        )}
+      >
+        {item.title}
+      </a>
+    );
+  }
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <div className="flex items-center justify-between group">
+        <a
+          href={`#${item.id}`}
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="text-muted-foreground hover:text-primary transition-colors font-medium block py-1 flex-1"
+        >
+          {item.title}
+        </a>
+        <CollapsibleTrigger asChild>
+          <button className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isOpen && "-rotate-90")} />
+          </button>
+        </CollapsibleTrigger>
+      </div>
+      <CollapsibleContent className="space-y-0.5 mt-0.5">
+        {item.children.map((child: any, idx: number) => (
+          <TocNode key={`${child.id}-${idx}`} item={child} />
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
 
 export function DocViewer({ content = "" }: { content?: string }) {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isTocOpen, setIsTocOpen] = useState(true);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -26,33 +90,63 @@ export function DocViewer({ content = "" }: { content?: string }) {
     toast.success("Documentation exported as Markdown!");
   };
 
-  // Simple hardcoded table of contents for presentation
-  const tocItems = [
-    { title: "Prerequisites", id: "#prerequisites" },
-    { title: "Quick Start", id: "#quick-start" },
-    { title: "Project Structure", id: "#project-structure" },
-    { title: "Next Steps", id: "#next-steps" },
-  ];
+  // Dynamically generate table of contents from markdown content
+  const tocItems = useMemo(() => {
+    if (!content) return [];
+    const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+    const items: any[] = [];
+    let match;
+    while ((match = headingRegex.exec(content)) !== null) {
+      // Remove markdown formatting characters from title
+      const rawTitle = match[2].trim();
+      const cleanTitle = rawTitle.replace(/[*_`]/g, '');
+      const level = match[1].length;
+      const id = generateSlug(rawTitle);
+      
+      const item = { level, title: cleanTitle, id, children: [] };
+      
+      if (level === 2) {
+        items.push(item);
+      } else if (level === 3) {
+        if (items.length > 0 && items[items.length - 1].level === 2) {
+          items[items.length - 1].children.push(item);
+        } else {
+          items.push(item);
+        }
+      }
+    }
+    return items;
+  }, [content]);
 
   return (
     <div className="flex flex-col md:flex-row gap-6 items-start">
       {/* Table of Contents Sidebar */}
-      <div className="w-full md:w-[200px] border border-border rounded-xl p-4 bg-card shrink-0 space-y-3">
-        <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider">
-          On This Page
-        </h3>
-        <nav className="flex flex-col gap-2 text-xs">
-          {tocItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.id}
-              className="text-muted-foreground hover:text-primary transition-colors font-medium"
+      {tocItems.length > 0 && (
+        <div className="w-full md:w-[200px] border border-border rounded-xl p-4 bg-card shrink-0 sticky top-20">
+          <Collapsible open={isTocOpen} onOpenChange={setIsTocOpen} className="w-full">
+            <div 
+              className="flex items-center justify-between group cursor-pointer"
+              onClick={() => setIsTocOpen(!isTocOpen)}
             >
-              {item.title}
-            </a>
-          ))}
-        </nav>
-      </div>
+              <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider select-none">
+                On This Page
+              </h3>
+              <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isTocOpen && "-rotate-90")} />
+                </button>
+              </CollapsibleTrigger>
+            </div>
+            <CollapsibleContent className="mt-3 space-y-3">
+              <nav className="flex flex-col gap-1 text-xs">
+                {tocItems.map((item, idx) => (
+                  <TocNode key={`${item.id}-${idx}`} item={item} />
+                ))}
+              </nav>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      )}
 
       {/* Main Documentation Viewer */}
       <div className="flex-1 border border-border rounded-xl bg-card shadow-sm overflow-hidden w-full">
@@ -116,6 +210,12 @@ export function DocViewer({ content = "" }: { content?: string }) {
               },
               td({ children }) {
                 return <td className="p-3 text-muted-foreground">{children}</td>;
+              },
+              h2({ children }) {
+                return <h2 id={generateSlug(children)} className="text-2xl font-semibold mt-8 mb-4">{children}</h2>;
+              },
+              h3({ children }) {
+                return <h3 id={generateSlug(children)} className="text-xl font-medium mt-6 mb-3">{children}</h3>;
               },
             }}
           >

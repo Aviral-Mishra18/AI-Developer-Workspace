@@ -46,6 +46,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0]);
   const [unreadNotifications, setUnreadNotifications] = useState<any[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { profile, user: authUser } = useAuth();
   
@@ -154,7 +155,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
 
       <div className="flex h-16 items-center gap-4 px-4 md:px-6">
         {/* Mobile Navigation Trigger */}
-        <Sheet>
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
           <SheetTrigger
             render={
               <Button variant="ghost" size="icon" className="md:hidden" />
@@ -165,7 +166,11 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
           </SheetTrigger>
           <SheetContent side="left" className="w-[260px] p-0">
             <div className="flex h-16 items-center px-6 border-b border-border">
-              <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-lg">
+              <Link 
+                href="/dashboard" 
+                className="flex items-center gap-2 font-semibold text-lg"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -185,6 +190,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.label}
                   </Link>

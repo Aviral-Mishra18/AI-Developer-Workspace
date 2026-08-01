@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { DocViewer } from "@/components/docs/DocViewer";
+import { GenerateDocModal } from "@/components/docs/GenerateDocModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, BookOpen, Clock, History } from "lucide-react";
+import { Search, Plus, BookOpen, Clock, History, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
@@ -17,6 +18,8 @@ export default function DocsPage() {
   const [docsList, setDocsList] = useState<any[]>([]);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const fetchDocs = async () => {
     if (!profile?.id) return;
@@ -48,9 +51,25 @@ export default function DocsPage() {
     (d.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleGenerateDoc = async () => {
-    toast.info("Connecting to AI document parsing engines...");
+  const handleGenerateClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleGenerateActual = async (topic: string) => {
+    toast.info("Generating documentation with AI...");
     try {
+      const response = await fetch("/api/docs/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate from API");
+      }
+
+      const generatedData = await response.json();
+
       // Find a workspace to attach to
       const { data: workspaces } = await supabase.from('workspaces').select('id').limit(1);
       const workspaceId = workspaces?.[0]?.id;
@@ -59,31 +78,57 @@ export default function DocsPage() {
          toast.error("You need a workspace to generate docs.");
          return;
       }
-      
-      setTimeout(async () => {
-        const { data, error } = await supabase
-          .from('ai_documentation')
-          .insert({
-            workspace_id: workspaceId,
-            title: "API Endpoint Routing Documentation",
-            description: "Auto-generated schemas for user auth router patterns.",
-            content: "# API Endpoint Routing Documentation\n\nThis is an auto-generated documentation for the API.\n\n## Prerequisites\n\nEnsure you have Node.js installed.\n\n## Quick Start\n\nRun `npm install` and `npm run dev`.\n\n## Next Steps\n\nStart building your API routes.",
-            category: "Reference",
-            version: "1.0",
-            status: "published",
-            created_by: profile?.id
-          })
-          .select()
-          .single() as any;
 
-        if (error) throw error;
+      const { data, error } = await supabase
+        .from('ai_documentation')
+        .insert({
+          workspace_id: workspaceId,
+          title: generatedData.title || topic,
+          description: generatedData.description || `Auto-generated documentation for ${topic}.`,
+          content: generatedData.content || `# ${topic}\n\nNo content generated.`,
+          category: "Reference",
+          version: "1.0",
+          status: "published",
+          created_by: profile?.id
+        })
+        .select()
+        .single() as any;
 
-        setDocsList((prev) => [data, ...prev]);
-        setSelectedDocId(data.id);
-        toast.success("Documentation generated successfully!");
-      }, 1500);
+      if (error) throw error;
+
+      setDocsList((prev) => [data, ...prev]);
+      setSelectedDocId(data.id);
+      toast.success("Documentation generated successfully!");
     } catch (err: any) {
+       console.error(err);
        toast.error("Failed to generate documentation");
+    }
+  };
+
+  const handleDeleteDoc = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this document?")) return;
+    
+    setIsDeleting(id);
+    try {
+      const { error } = await supabase
+        .from('ai_documentation')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setDocsList((prev) => prev.filter(doc => doc.id !== id));
+      if (selectedDocId === id) {
+        const remaining = docsList.filter(doc => doc.id !== id);
+        setSelectedDocId(remaining.length > 0 ? remaining[0].id : null);
+      }
+      toast.success("Document deleted");
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to delete document");
+    } finally {
+      setIsDeleting(null);
     }
   };
 
@@ -110,7 +155,7 @@ export default function DocsPage() {
             Browse and generate README, APIs, or architectural specifications directly from your codebase components.
           </p>
         </div>
-        <Button onClick={handleGenerateDoc} className="flex items-center gap-1.5 shadow-sm">
+        <Button onClick={handleGenerateClick} className="flex items-center gap-1.5 shadow-sm">
           <Plus className="h-4 w-4" />
           Generate Docs
         </Button>
@@ -139,18 +184,19 @@ export default function DocsPage() {
               ) : (
                 filteredDocs.map((doc) => {
                   const isActive = doc.id === selectedDocId;
+                  const isThisDeleting = isDeleting === doc.id;
                   return (
-                    <button
+                    <div
                       key={doc.id}
                       onClick={() => setSelectedDocId(doc.id)}
-                      className={`w-full flex items-start gap-2.5 p-3 rounded-lg text-left transition-colors ${
+                      className={`w-full flex items-start gap-2.5 p-3 rounded-lg text-left transition-colors cursor-pointer group ${
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-accent text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       <BookOpen className="h-4 w-4 shrink-0 mt-0.5" />
-                      <div className="space-y-1 min-w-0">
+                      <div className="space-y-1 min-w-0 flex-1">
                         <div className="font-semibold text-xs truncate leading-normal text-foreground group-hover:text-primary">
                           {doc.title}
                         </div>
@@ -158,7 +204,20 @@ export default function DocsPage() {
                           {doc.description}
                         </p>
                       </div>
-                    </button>
+                      <button
+                        className={cn(
+                          "h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center",
+                          isActive 
+                            ? "hover:bg-black/20 text-primary-foreground" 
+                            : "hover:bg-destructive hover:text-destructive-foreground text-muted-foreground"
+                        )}
+                        onClick={(e) => handleDeleteDoc(doc.id, e)}
+                        disabled={isThisDeleting}
+                        title="Delete document"
+                      >
+                        {isThisDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                      </button>
+                    </div>
                   );
                 })
               )}
@@ -222,6 +281,12 @@ export default function DocsPage() {
           )}
         </div>
       </div>
+      
+      <GenerateDocModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onGenerate={handleGenerateActual} 
+      />
     </div>
   );
 }

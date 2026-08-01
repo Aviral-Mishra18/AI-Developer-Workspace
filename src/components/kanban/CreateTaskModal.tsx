@@ -252,7 +252,7 @@ export function CreateTaskModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assigneeId">Assignee</Label>
-              <Select value={watch("assigneeId") || undefined} onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>
+              <Select value={watch("assigneeId") || null} onValueChange={(val: string | null) => { if (val) setValue("assigneeId", val) }}>
                 <SelectTrigger className="border-border bg-card">
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>
