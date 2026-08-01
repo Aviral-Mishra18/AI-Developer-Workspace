@@ -183,9 +183,9 @@ export default function ProjectsPage() {
                   <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto justify-between sm:justify-start">
                   {/* Progress bar */}
-                  <div className="w-[120px] hidden md:block space-y-1">
+                  <div className="w-[120px] hidden md:block space-y-1 flex-shrink-0">
                     <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
                       <span>Progress</span>
                       <span>{p.progress}%</span>
@@ -195,7 +195,7 @@ export default function ProjectsPage() {
 
                   <Badge
                     className={cn(
-                      "capitalize border-0",
+                      "capitalize border-0 flex-shrink-0",
                       p.status === "active"
                         ? "bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-400"
                         : p.status === "completed"
@@ -209,11 +209,11 @@ export default function ProjectsPage() {
                     {p.status}
                   </Badge>
 
-                  <div className="text-xs text-muted-foreground font-medium hidden sm:block">
+                  <div className="text-xs text-muted-foreground font-medium hidden sm:block flex-shrink-0">
                     Updated {p.lastUpdated}
                   </div>
 
-                  <Button variant="ghost" size="sm" render={<Link href={`/projects/${p.id}`} />} nativeButton={false} className="h-8">
+                  <Button variant="ghost" size="sm" render={<Link href={`/projects/${p.id}`} />} nativeButton={false} className="h-8 flex-shrink-0">
                     Board
                   </Button>
                 </div>

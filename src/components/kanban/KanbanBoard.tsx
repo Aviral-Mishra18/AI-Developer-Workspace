@@ -6,6 +6,7 @@ import { TaskCard } from "./TaskCard";
 import { CreateTaskModal } from "./CreateTaskModal";
 import { EditTaskModal } from "./EditTaskModal";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeModalCol, setActiveModalCol] = useState<TaskStatus | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("backlog");
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -94,11 +96,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     }
 
     const updatedTasks = Array.from(tasks);
-    const taskIndex = updatedTasks.findIndex((t) => t.id === draggableId);
+    const realTaskId = draggableId.replace('mobile-', '').replace('desktop-', '');
+    const taskIndex = updatedTasks.findIndex((t) => t.id === realTaskId);
 
     if (taskIndex !== -1) {
       const task = updatedTasks[taskIndex];
-      const newStatus = destination.droppableId as TaskStatus;
+      const newStatus = destination.droppableId.replace('mobile-', '').replace('desktop-', '') as TaskStatus;
 
       // Optimistic update
       task.status = newStatus;
@@ -112,7 +115,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       supabase
         .from("tasks")
         .update({ status: newStatus })
-        .eq("id", draggableId)
+        .eq("id", realTaskId)
         .then(({ error }) => {
           if (error) {
             console.error("Failed to update task status:", error.message);
@@ -146,14 +149,62 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   return (
     <div className="space-y-4">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex overflow-x-auto pb-4 space-x-4 snap-x snap-mandatory md:grid md:grid-cols-5 md:space-x-0 md:snap-none md:gap-4 scrollbar-thin">
+        {/* Mobile View - Tabs */}
+        <div className="md:hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full flex overflow-x-auto justify-start h-auto p-1 bg-muted/50 scrollbar-none mb-4">
+              {COLUMNS.map((column) => (
+                <TabsTrigger key={column.id} value={column.id} className="flex-1 min-w-[100px] text-xs py-2">
+                  {column.title} ({tasks.filter(t => t.status === column.id).length})
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            
+            {COLUMNS.map((column) => {
+              const columnTasks = tasks.filter((t) => t.status === column.id);
+              return (
+                <TabsContent key={column.id} value={column.id} className="mt-0 outline-none">
+                  <div className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-border rounded-xl p-3 w-full max-h-[500px] overflow-hidden">
+                    <div className="flex items-center justify-between pb-3 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-sm text-foreground">{column.title}</h3>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => setActiveModalCol(column.id)} className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground">
+                        <Plus className="h-4 w-4" />
+                        <span className="sr-only">Add Task</span>
+                      </Button>
+                    </div>
+
+                    <Droppable droppableId={`mobile-${column.id}`}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`flex-1 overflow-y-auto min-h-[150px] rounded-lg transition-colors p-1 ${snapshot.isDraggingOver ? "bg-slate-100/60 dark:bg-slate-900/60" : ""}`}
+                        >
+                          {columnTasks.map((task, idx) => (
+                            <TaskCard key={`mobile-${task.id}`} prefix="mobile-" task={task} index={idx} onEdit={setEditingTask} />
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </div>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        </div>
+
+        {/* Desktop View - Grid */}
+        <div className="hidden md:grid md:grid-cols-5 md:gap-4 pb-4">
           {COLUMNS.map((column) => {
             const columnTasks = tasks.filter((t) => t.status === column.id);
 
             return (
               <div
                 key={column.id}
-                className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-border rounded-xl p-3 min-w-[280px] md:min-w-0 max-h-[750px] overflow-hidden snap-center"
+                className="flex flex-col bg-slate-50/50 dark:bg-slate-900/40 border border-border rounded-xl p-3 w-full min-w-0 max-h-[750px] overflow-hidden"
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between pb-3 shrink-0">
@@ -175,7 +226,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                 </div>
 
                 {/* Droppable Area */}
-                <Droppable droppableId={column.id}>
+                <Droppable droppableId={`desktop-${column.id}`}>
                   {(provided, snapshot) => (
                     <div
                       ref={provided.innerRef}
@@ -188,7 +239,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                     >
                       {columnTasks.map((task, idx) => (
                         <TaskCard
-                          key={task.id}
+                          key={`desktop-${task.id}`}
+                          prefix="desktop-"
                           task={task}
                           index={idx}
                           onEdit={setEditingTask}

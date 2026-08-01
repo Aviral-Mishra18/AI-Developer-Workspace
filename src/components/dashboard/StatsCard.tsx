@@ -14,8 +14,8 @@ interface StatsCardProps {
 export function StatsCard({ title, value, change, trend, label, icon: Icon }: StatsCardProps) {
   return (
     <Card className="border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 min-w-0">
+        <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate flex-1 pr-2">
           {title}
         </CardTitle>
         <div className="p-2 bg-slate-100 dark:bg-slate-900 rounded-lg text-foreground">
@@ -40,7 +40,7 @@ export function StatsCard({ title, value, change, trend, label, icon: Icon }: St
             )}
             {Math.abs(change)}%
           </span>
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground truncate">{label}</span>
         </div>
       </CardContent>
     </Card>

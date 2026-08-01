@@ -25,6 +25,7 @@ import {
   Menu,
   Check,
   Sparkles,
+  X,
 } from "lucide-react";
 
 import Link from "next/link";
@@ -44,6 +45,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const [workspaces, setWorkspaces] = useState<any[]>([{ id: 'default', name: 'Personal Workspace' }]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(workspaces[0]);
   const [unreadNotifications, setUnreadNotifications] = useState<any[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { profile, user: authUser } = useAuth();
   
@@ -128,6 +130,28 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
 
   return (
     <header className="sticky top-0 z-10 w-full border-b border-border bg-background/80 backdrop-blur-md">
+      {/* Mobile Search Overlay */}
+      {isSearchOpen && (
+        <div className="md:hidden absolute inset-0 z-50 bg-background flex items-center px-4 gap-2 border-b border-border">
+          <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Input
+            autoFocus
+            type="search"
+            placeholder="Search..."
+            className="w-full h-9 bg-transparent border-none shadow-none focus-visible:ring-0 px-2"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSearchOpen(false)}
+            className="h-8 w-8 rounded-md flex-shrink-0"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close search</span>
+          </Button>
+        </div>
+      )}
+
       <div className="flex h-16 items-center gap-4 px-4 md:px-6">
         {/* Mobile Navigation Trigger */}
         <Sheet>
@@ -209,7 +233,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
           </DropdownMenu>
         </div>
 
-        {/* Search Bar */}
+        {/* Desktop Search Bar */}
         <div className="flex-1 md:flex max-w-md hidden relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -220,7 +244,17 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
         </div>
 
         {/* Right Nav Icons */}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          {/* Mobile Search Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden relative w-9 h-9 rounded-md transition-colors hover:bg-accent flex-shrink-0"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Search className="h-[1.2rem] w-[1.2rem]" />
+            <span className="sr-only">Search</span>
+          </Button>
           {/* Notifications Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger

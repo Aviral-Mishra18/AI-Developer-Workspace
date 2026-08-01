@@ -11,9 +11,10 @@ interface TaskCardProps {
   task: Task;
   index: number;
   onEdit: (task: Task) => void;
+  prefix?: string;
 }
 
-export function TaskCard({ task, index, onEdit }: TaskCardProps) {
+export function TaskCard({ task, index, onEdit, prefix = "" }: TaskCardProps) {
   const getPriorityColor = (prio: TaskPriority) => {
     switch (prio) {
       case "critical":
@@ -30,7 +31,7 @@ export function TaskCard({ task, index, onEdit }: TaskCardProps) {
   };
 
   return (
-    <Draggable draggableId={task.id} index={index}>
+    <Draggable draggableId={`${prefix}${task.id}`} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
