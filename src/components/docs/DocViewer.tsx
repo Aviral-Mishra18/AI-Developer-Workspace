@@ -54,10 +54,8 @@ const TocNode = ({ item }: { item: any }) => {
         >
           {item.title}
         </a>
-        <CollapsibleTrigger asChild>
-          <button className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isOpen && "-rotate-90")} />
-          </button>
+        <CollapsibleTrigger className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isOpen && "-rotate-90")} />
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="space-y-0.5 mt-0.5">
@@ -131,10 +129,8 @@ export function DocViewer({ content = "" }: { content?: string }) {
               <h3 className="font-semibold text-xs text-foreground uppercase tracking-wider select-none">
                 On This Page
               </h3>
-              <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
-                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isTocOpen && "-rotate-90")} />
-                </button>
+              <CollapsibleTrigger onClick={(e: any) => e.stopPropagation()} className="text-muted-foreground hover:text-primary p-0.5 rounded-md hover:bg-accent shrink-0">
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isTocOpen && "-rotate-90")} />
               </CollapsibleTrigger>
             </div>
             <CollapsibleContent className="mt-3 space-y-3">
