@@ -49,13 +49,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      // Use getUser() for reliable server-verified auth state.
+      // getSession() reads from local storage and may have stale/expired tokens.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // If user is verified, also get the session for token access
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(user);
+        await fetchProfile(user.id);
+      } else {
+        setSession(null);
+        setUser(null);
       }
+      setIsLoading(false);
     };
 
     initializeAuth();

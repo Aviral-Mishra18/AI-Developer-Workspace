@@ -25,11 +25,12 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // IMPORTANT: Use getUser() instead of getSession() for proper token refresh.
+  // getSession() only reads cookies without verifying with Supabase server,
+  // which means expired tokens never get refreshed → all data fetches fail silently.
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  
-  const user = session?.user;
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
   const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
