@@ -1,18 +1,41 @@
-import { NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const supabase = await createServerSupabaseClient();
+    // We MUST create the redirect response FIRST and then set cookies on it.
+    // Using createServerSupabaseClient() with cookies() from next/headers won't work
+    // here because NextResponse.redirect() creates a NEW response object, and
+    // cookies set via cookieStore.set() go on the implicit response — not our redirect.
+    const redirectUrl = `${origin}${next}`;
+    const response = NextResponse.redirect(redirectUrl);
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Set cookies directly on the redirect response
+              response.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Successful code exchange → redirect to dashboard
-      return NextResponse.redirect(`${origin}${next}`);
+      return response;
     }
 
     console.error("Auth callback error:", error.message);
